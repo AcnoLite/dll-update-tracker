@@ -1,0 +1,917 @@
+{
+  "_meta": {
+    "description": "Suivi des versions des DLL graphiques (upscaling, frame gen, low latency, ray tracing, physique, debug)",
+    "last_updated": "2026-07-09",
+    "schema_version": "2.0"
+  },
+  "entries": [
+    {
+      "id": "d3d12-agility",
+      "vendor": "microsoft",
+      "name": "Direct3D 12 Agility SDK",
+      "role": "Runtime D3D12 découplé de l'OS, accès aux dernières features D3D12",
+      "dlls": [
+        "D3D12Core.dll",
+        "d3d12SDKLayers.dll",
+        "D3D12StateObjectCompiler.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "microsoft/DirectX-Headers"
+        },
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.Direct3D.D3D12"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "1.619.4",
+          "date": "2026-07-03"
+        },
+        "prerelease": {
+          "version": "1.721.2-preview",
+          "date": "2026-07-03"
+        }
+      },
+      "active_source": "nuget:Microsoft.Direct3D.D3D12",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "directstorage",
+      "vendor": "microsoft",
+      "name": "DirectStorage",
+      "role": "Chargement d'assets accéléré NVMe → GPU, decompression GPU",
+      "dlls": [
+        "dstoragecore.dll",
+        "dstorage.dll"
+      ],
+      "sources": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.Direct3D.DirectStorage"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "1.3.0",
+          "date": "2025-06-27"
+        },
+        "prerelease": {
+          "version": "1.4.0-preview2-2606.904",
+          "date": "2026-06-16"
+        }
+      },
+      "active_source": "nuget:Microsoft.Direct3D.DirectStorage",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "dxc",
+      "vendor": "microsoft",
+      "name": "DirectX Shader Compiler (DXC)",
+      "role": "Compile les shaders HLSL en bytecode DXIL, Shader Model 6+",
+      "dlls": [
+        "dxcompiler.dll",
+        "dxil.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "microsoft/DirectXShaderCompiler"
+        },
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.Direct3D.DXC",
+          "note": "NuGet utilise un scheme de version different, a eviter comme fallback"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "1.9.2602.24",
+          "date": "2026-06-03"
+        },
+        "prerelease": {
+          "version": "1.10.2605.24",
+          "date": "2026-05-26"
+        }
+      },
+      "active_source": "github:microsoft/DirectXShaderCompiler",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "directxtk",
+      "vendor": "microsoft",
+      "name": "DirectX Tool Kit for DirectX 11",
+      "role": "Helpers C++ pour D3D11 (textures, sprites, effets, maths)",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "nuget",
+          "package_id": "directxtk_desktop_win10",
+          "note": "Lib statique, pas de DLL redistribuable"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "2026.5.8.1",
+          "date": "2026-05-10"
+        },
+        "prerelease": null
+      },
+      "active_source": "nuget:directxtk_desktop_win10",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "pix",
+      "vendor": "microsoft",
+      "name": "PIX / WinPixEventRuntime",
+      "role": "Marqueurs de debug/profiling CPU+GPU",
+      "dlls": [
+        "WinPixEventRuntime.dll",
+        "WinPixTimingCapturer.dll"
+      ],
+      "sources": [
+        {
+          "type": "nuget",
+          "package_id": "WinPixEventRuntime"
+        },
+        {
+          "type": "github",
+          "repo": "microsoft/PixEvents",
+          "note": "GitHub = source code, pas de releases"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "1.0.240308001",
+          "date": "2024-03-27"
+        },
+        "prerelease": null
+      },
+      "active_source": "nuget:WinPixEventRuntime",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "ags-sdk",
+      "vendor": "amd",
+      "name": "AGS SDK",
+      "role": "Accès aux extensions GPU spécifiques AMD",
+      "dlls": [
+        "amd_ags_x64.dll",
+        "amd_ags_x86.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "GPUOpen-LibrariesAndSDKs/AGS_SDK"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "6.3.1",
+          "date": "2026-05-27"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:GPUOpen-LibrariesAndSDKs/AGS_SDK",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "d3d12-memory-allocator",
+      "vendor": "amd",
+      "name": "D3D12 Memory Allocator",
+      "role": "Gestion optimisée allocation mémoire GPU en D3D12",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator",
+          "note": "Header-only, pas de DLL"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "3.2.0",
+          "date": "2026-06-04"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "fidelityfx-sdk",
+      "vendor": "amd",
+      "name": "AMD FidelityFX (FSR) SDK",
+      "role": "Upscaling (FSR), Frame Generation, Ray Regeneration, Radiance Caching",
+      "dlls": [
+        "amd_fidelityfx_dx12.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "GPUOpen-LibrariesAndSDKs/FidelityFX-SDK",
+          "note": "SDK 2.0+ : DLL split par effet"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "2.3.0",
+          "date": "2026-06-24"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:GPUOpen-LibrariesAndSDKs/FidelityFX-SDK",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "anti-lag-2",
+      "vendor": "amd",
+      "name": "Anti-Lag 2",
+      "role": "Réduction latence input → affichage, équivalent AMD de Reflex",
+      "dlls": [
+        "amdxx64.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "GPUOpen-LibrariesAndSDKs/AntiLag2-SDK",
+          "note": "DLL fournie par le driver Adrenalin, SDK = headers uniquement"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "2.0.0a",
+          "date": "2024-10-01"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:GPUOpen-LibrariesAndSDKs/AntiLag2-SDK",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "streamline",
+      "vendor": "nvidia",
+      "name": "Streamline",
+      "role": "Couche d'abstraction pour plugger DLSS, Reflex, NIS dans le pipeline rendu",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "NVIDIA-RTX/Streamline",
+          "note": "Framework C++, pas de DLL standalone"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "2.12.0",
+          "date": "2026-06-23"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:NVIDIA-RTX/Streamline",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "dlss",
+      "vendor": "nvidia",
+      "name": "DLSS (Deep Learning Super Sampling)",
+      "role": "Upscaling IA, Frame Generation, Ray Reconstruction via Tensor Cores RTX",
+      "dlls": [
+        "nvngx_dlss.dll",
+        "nvngx_dlssg.dll",
+        "nvngx_dlssd.dll",
+        "nvngx.dll",
+        "_nvngx.dll",
+        "nvngx_deepdvc.dll",
+        "nvngx_truehdr.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "NVIDIA/DLSS",
+          "note": "nvngx.dll/_nvngx.dll = NGX core loader, nvngx_deepdvc.dll = RTX Dynamic Vibrance, nvngx_truehdr.dll = RTX HDR"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "310.7.0",
+          "date": "2026-06-23"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:NVIDIA/DLSS",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "reflex",
+      "vendor": "nvidia",
+      "name": "NVIDIA Reflex",
+      "role": "Réduction latence input → affichage (low-latency mode + frame warp)",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "NVIDIA-RTX/Streamline",
+          "note": "Intégré via Streamline, pas de repo séparé"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "2.12.0",
+          "date": "2026-06-23"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:NVIDIA-RTX/Streamline",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "nvapi",
+      "vendor": "nvidia",
+      "name": "NVAPI",
+      "role": "API bas niveau NVIDIA : OC, monitoring, ventilation, base de Reflex",
+      "dlls": [
+        "nvapi64.dll",
+        "nvapi.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "NVIDIA/nvapi",
+          "note": "Repo = headers/libs uniquement, DLL livrée avec le driver"
+        }
+      ],
+      "manual": true,
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "nis",
+      "vendor": "nvidia",
+      "name": "NVIDIA Image Scaling (NIS)",
+      "role": "Upscaling spatial + sharpening, fonctionne sur tout GPU",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "NVIDIAGameWorks/NVIDIAImageScaling",
+          "note": "Shaders + headers, pas de DLL"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "1.0.3",
+          "date": "2022-08-22"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:NVIDIAGameWorks/NVIDIAImageScaling",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "rtxgi",
+      "vendor": "nvidia",
+      "name": "RTXGI (Ray Tracing Global Illumination)",
+      "role": "Illumination indirecte multi-rebonds sans bake",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "NVIDIA-RTX/RTXGI",
+          "note": "SDK C++/HLSL, compilé dans le moteur"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "2.7.0",
+          "date": "2026-03-01"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:NVIDIA-RTX/RTXGI",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "rtxdi",
+      "vendor": "nvidia",
+      "name": "RTXDI (Ray Traced Direct Lighting)",
+      "role": "Milliers de lumières dynamiques en temps réel",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "NVIDIA-RTX/RTXDI",
+          "note": "SDK C++/HLSL, compilé dans le moteur"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "3.0.0",
+          "date": "2026-03-10"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:NVIDIA-RTX/RTXDI",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "physx",
+      "vendor": "nvidia",
+      "name": "PhysX",
+      "role": "Moteur physique (rigidbody, soft body, cloth, fluides, destruction)",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "NVIDIA-Omniverse/PhysX",
+          "note": "V5 open-source BSD-3, built from source"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "ovphysx-0.4.13",
+          "date": "2026-06-02"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:NVIDIA-Omniverse/PhysX",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "xess",
+      "vendor": "intel",
+      "name": "Intel XeSS",
+      "role": "Upscaling IA + Frame Generation + Low Latency",
+      "dlls": [
+        "libxess.dll",
+        "libxess_dx11.dll",
+        "libxell.dll",
+        "libxess_fg.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "intel/xess",
+          "note": "Binaires Windows précompilés, pas open source"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "3.0.1",
+          "date": "2026-04-17"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:intel/xess",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "vulkan-loader",
+      "vendor": "vulkan",
+      "name": "Vulkan SDK / Loader",
+      "role": "Pont entre l'application et le driver Vulkan",
+      "dlls": [
+        "vulkan-1.dll"
+      ],
+      "sources": [
+        {
+          "type": "scraping-json",
+          "url": "https://vulkan.lunarg.com/sdk/latest.json",
+          "json_path": "windows",
+          "label": "LunarG",
+          "note": "JSON endpoint publique"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "1.4.350.0",
+          "date": null
+        },
+        "prerelease": null
+      },
+      "active_source": "scraping-json:https://vulkan.lunarg.com/sdk/latest.json",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "swiftshader",
+      "vendor": "vulkan",
+      "name": "SwiftShader",
+      "role": "Implémentation logicielle (CPU) de Vulkan/D3D, fallback sans GPU",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github-tags",
+          "repo": "google/swiftshader",
+          "note": "Repo archive, pas de releases ni tags"
+        }
+      ],
+      "manual": true,
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "openal-soft",
+      "vendor": "audio",
+      "name": "OpenAL Soft",
+      "role": "Implementation audio 3D open source, spatial audio, HRTF",
+      "dlls": [
+        "openal32.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "kcat/openal-soft"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "1.25.2",
+          "date": "2026-05-12"
+        },
+        "prerelease": {
+          "version": "latest",
+          "date": "2026-07-02"
+        }
+      },
+      "active_source": "github:kcat/openal-soft",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "steam-audio",
+      "vendor": "audio",
+      "name": "Steam Audio",
+      "role": "Audio spatialisation, ray tracing audio, occlusion, reverb",
+      "dlls": [
+        "phonon.dll",
+        "phonon_fmod_studio.dll",
+        "phonon_unity.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "ValveSoftware/steam-audio",
+          "note": "Inclut plugins FMOD, Unity, Wwise"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "4.8.1",
+          "date": "2026-02-11"
+        },
+        "prerelease": {
+          "version": "2.0-beta.20",
+          "date": "2021-04-13"
+        }
+      },
+      "active_source": "github:ValveSoftware/steam-audio",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "xaudio2-redist",
+      "vendor": "audio",
+      "name": "XAudio2 Redistributable",
+      "role": "API audio bas niveau Microsoft, replacement de DirectSound",
+      "dlls": [
+        "XAUDIO2_9REDIST.dll"
+      ],
+      "sources": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.XAudio2.Redist"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "1.2.13",
+          "date": "2025-04-10"
+        },
+        "prerelease": null
+      },
+      "active_source": "nuget:Microsoft.XAudio2.Redist",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "miniaudio",
+      "vendor": "audio",
+      "name": "Miniaudio",
+      "role": "Bibliotheque audio C unique header, playback, recording, mixing",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "mackron/miniaudio",
+          "note": "Header-only, pas de DLL redistribuable"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "0.11.25",
+          "date": "2026-03-03"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:mackron/miniaudio",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "soloud",
+      "vendor": "audio",
+      "name": "SoLoud",
+      "role": "Moteur audio portable, effets, filtrage, convolution",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "jarikomppa/soloud",
+          "note": "Projet dormant (dernier release 2020)"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "RELEASE_20200207",
+          "date": "2020-02-07"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:jarikomppa/soloud",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "nrd",
+      "vendor": "nvidia",
+      "name": "NRD (Real-time Denoisers)",
+      "role": "Denoiseurs temps reel pour ray tracing (ReBLUR, ReLAX)",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "NVIDIA-RTX/NRD",
+          "note": "SDK compilee dans le moteur"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "4.17.3",
+          "date": "2026-04-30"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:NVIDIA-RTX/NRD",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "nri",
+      "vendor": "nvidia",
+      "name": "NRi (NRD Interface)",
+      "role": "Couche d'abstraction rendu pour NRD, supporte D3D11/D3D12/Vulkan",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "NVIDIA-RTX/NRi"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "179",
+          "date": "2026-04-20"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:NVIDIA-RTX/NRi",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "nvrhi",
+      "vendor": "nvidia",
+      "name": "NVRHI",
+      "role": "Couche d'abstraction rendu multi-API (D3D11, D3D12, Vulkan)",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "NVIDIA-RTX/NVRHI",
+          "note": "Pas de releases, utilise par les samples NVIDIA"
+        }
+      ],
+      "manual": true,
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "vulkan-memory-allocator",
+      "vendor": "amd",
+      "name": "Vulkan Memory Allocator (VMA)",
+      "role": "Allocation memoire optimisee pour Vulkan",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator",
+          "note": "Header-only, integre dans le moteur"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "3.4.0",
+          "date": "2026-06-04"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "bullet-physics",
+      "vendor": "other",
+      "name": "Bullet Physics",
+      "role": "Moteur physique open source (rigidbody, soft body, collision)",
+      "dlls": [],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "bulletphysics/bullet3",
+          "note": "Compile dans le moteur"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "3.25",
+          "date": "2022-04-24"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:bulletphysics/bullet3",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "openxr",
+      "vendor": "vulkan",
+      "name": "OpenXR",
+      "role": "API standardisee VR/AR (Khronos Group)",
+      "dlls": [
+        "openxr_loader.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "KhronosGroup/OpenXR-SDK"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "release-1.1.61",
+          "date": "2026-07-06"
+        },
+        "prerelease": {
+          "version": "release-1.0.21",
+          "date": "2022-01-12"
+        }
+      },
+      "active_source": "github:KhronosGroup/OpenXR-SDK",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "renderdoc",
+      "vendor": "other",
+      "name": "RenderDoc",
+      "role": "Debug GPU, capture et analyse de frames de rendu",
+      "dlls": [
+        "renderdoc.dll",
+        "renderdocshim.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "baldurk/renderdoc"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "1.45",
+          "date": "2026-07-02"
+        },
+        "prerelease": null
+      },
+      "active_source": "github:baldurk/renderdoc",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "vc-redist",
+      "vendor": "microsoft",
+      "name": "VC++ Redistributable",
+      "role": "Runtime C++ Microsoft, requis par la plupart des applis Windows",
+      "dlls": [
+        "vcruntime140.dll",
+        "msvcp140.dll",
+        "vcruntime140_1.dll"
+      ],
+      "sources": [
+        {
+          "type": "scraping-html",
+          "url": "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
+          "selector": "table tbody tr:first-child td:first-child a",
+          "regex": "([0-9]+\\.[0-9]+\\.[0-9]+)",
+          "label": "Microsoft Learn"
+        }
+      ],
+      "versions": {
+        "stable": {
+          "version": "14.0.24212",
+          "date": null
+        },
+        "prerelease": null
+      },
+      "active_source": "scraping-html:https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
+      "last_checked": "2026-07-09"
+    },
+    {
+      "id": "fmod",
+      "vendor": "audio",
+      "name": "FMOD Studio",
+      "role": "Middleware audio professional (jeux, films, VR)",
+      "dlls": [
+        "fmod.dll",
+        "fmodstudio.dll"
+      ],
+      "sources": [
+        {
+          "type": "scraping-html",
+          "url": "https://fmod.com/download/",
+          "label": "FMOD",
+          "note": "SPA JavaScript, pas de HTML server-side, maj manuelle"
+        }
+      ],
+      "manual": true,
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "wwise",
+      "vendor": "audio",
+      "name": "Wwise",
+      "role": "Middleware audio AAA (Audiokinetic/Epic)",
+      "dlls": [
+        "AkSoundEngine.dll",
+        "AkMotionSink.dll"
+      ],
+      "sources": [
+        {
+          "type": "scraping-html",
+          "url": "https://www.audiokinetic.com/download/",
+          "label": "Audiokinetic",
+          "note": "SPA JavaScript + login requis, maj manuelle"
+        }
+      ],
+      "manual": true,
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "physx-legacy",
+      "vendor": "nvidia",
+      "name": "PhysX Legacy (v4)",
+      "role": "Moteur physique v4, distribue comme DLL standalone",
+      "dlls": [
+        "PhysX_9.13.12611_win64.dll",
+        "PhysXDevice64.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "NVIDIAGameWorks/PhysX",
+          "note": "Legacy, remplace par PhysX 5, repo archive"
+        }
+      ],
+      "manual": true,
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    }
+  ]
+}
