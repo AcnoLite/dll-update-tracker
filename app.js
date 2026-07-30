@@ -18,6 +18,7 @@ let allEntries = [];
 function fmtDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return '';
   return d.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
@@ -50,13 +51,6 @@ function renderVendorFilters() {
     const count = allEntries.filter(e => e.vendor === key).length;
     return `<button class="vendor-chip active" data-vendor="${key}" style="--chip-color:${meta.color}">${meta.label} (${count})</button>`;
   }).join('');
-
-  container.addEventListener('click', (e) => {
-    const chip = e.target.closest('.vendor-chip');
-    if (!chip) return;
-    chip.classList.toggle('active');
-    renderDashboard();
-  });
 }
 
 function getActiveVendors() {
@@ -188,6 +182,12 @@ async function init() {
 
     renderStats(allEntries);
     renderVendorFilters();
+    $('#vendor-filters').addEventListener('click', (e) => {
+      const chip = e.target.closest('.vendor-chip');
+      if (!chip) return;
+      chip.classList.toggle('active');
+      renderDashboard();
+    });
     renderDashboard();
 
     $('#search-input').addEventListener('input', renderDashboard);
