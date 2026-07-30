@@ -14,12 +14,17 @@ const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
 let allEntries = [];
+let initialized = false;
 
 function fmtDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return '';
   return d.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function isValidUrl(str) {
+  try { return new URL(str).protocol.startsWith('http'); } catch { return false; }
 }
 
 function escapeHtml(str) {
@@ -130,7 +135,7 @@ function renderCard(entry, vendorColor) {
         if (s.type === 'nuget') {
           return `<a href="https://www.nuget.org/packages/${escapeHtml(s.package_id)}/">NuGet</a>`;
         }
-        if (s.url) {
+        if (s.url && isValidUrl(s.url)) {
           const label = s.label || 'Source';
           return `<a href="${escapeHtml(s.url)}">${escapeHtml(label)}</a>`;
         }
@@ -160,6 +165,7 @@ function renderCard(entry, vendorColor) {
 
 function showLoading() {
   $('#dashboard').innerHTML = `<div class="loading"><div class="spinner"></div><span>Chargement des données...</span></div>`;
+  $('#stats-bar').innerHTML = '';
 }
 
 function showError(msg) {
@@ -180,17 +186,20 @@ async function init() {
     const data = await res.json();
     allEntries = data.entries || [];
 
+    if (!initialized) {
+      initialized = true;
+      $('#vendor-filters').addEventListener('click', (e) => {
+        const chip = e.target.closest('.vendor-chip');
+        if (!chip) return;
+        chip.classList.toggle('active');
+        renderDashboard();
+      });
+      $('#search-input').addEventListener('input', renderDashboard);
+    }
+
     renderStats(allEntries);
     renderVendorFilters();
-    $('#vendor-filters').addEventListener('click', (e) => {
-      const chip = e.target.closest('.vendor-chip');
-      if (!chip) return;
-      chip.classList.toggle('active');
-      renderDashboard();
-    });
     renderDashboard();
-
-    $('#search-input').addEventListener('input', renderDashboard);
   } catch (err) {
     console.error('Failed to load tracker data:', err);
     showError('Impossible de charger les données. Vérifiez que data/tracker.json existe.');
