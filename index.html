@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DLL Update Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>DLL Update Tracker</h1>
+    <p class="subtitle">Suivi automatique des versions des SDK graphiques, audio et outils de développement</p>
+  </header>
+
+  <section id="stats-bar" role="status" aria-live="polite"></section>
+
+  <section id="controls">
+    <div class="search-wrapper">
+      <input type="text" id="search-input" placeholder="Rechercher un SDK (nom, rôle, DLL...)" autocomplete="off">
+    </div>
+    <div id="vendor-filters"></div>
+  </section>
+
+  <main id="dashboard" aria-label="Liste des SDKs"></main>
+
+  <footer>
+    <p>
+      Mis à jour automatiquement chaque semaine via
+      <a href="https://github.com/AcnoLite/dll-update-tracker/actions">GitHub Actions</a>
+      &middot;
+      <a href="https://github.com/AcnoLite/dll-update-tracker">GitHub</a>
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
