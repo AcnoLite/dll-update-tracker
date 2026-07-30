@@ -7,16 +7,13 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout tracking branch
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: tracking
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -34,39 +31,14 @@ jobs:
       - name: Generate README
         run: python scripts/generate_readme.py
 
-      - name: Commit and push to tracking
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/tracker.json README.md
           if git diff --cached --quiet; then
             echo "No changes to commit"
-            echo "has_changes=false" >> $GITHUB_ENV
           else
             git commit -m "chore: update DLL tracker versions [skip ci]"
             git push
-            echo "has_changes=true" >> $GITHUB_ENV
           fi
-
-      - name: Create or update PR to main
-        if: env.has_changes == 'true'
-        run: |
-          PR_TITLE="chore: DLL tracker update $(date +%Y-%m-%d)"
-          PR_BODY="Auto-updated by GitHub Actions on $(date +%Y-%m-%d %H:%M UTC)."
-
-          # Check if PR already exists
-          EXISTING_PR=$(gh pr list --base main --head tracking --json number --jq '.[0].number' 2>/dev/null || echo "")
-
-          if [ -n "$EXISTING_PR" ]; then
-            echo "PR #$EXISTING_PR already exists, updating"
-            gh pr comment "$EXISTING_PR" --body "$PR_BODY"
-          else
-            echo "Creating new PR"
-            gh pr create \
-              --base main \
-              --head tracking \
-              --title "$PR_TITLE" \
-              --body "$PR_BODY"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
