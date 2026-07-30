@@ -13,6 +13,41 @@ const VENDOR_ORDER = ['microsoft','amd','nvidia','intel','vulkan','audio','other
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
+/* ================= Theme ================= */
+
+function currentTheme() {
+  return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+}
+
+function syncThemeButton() {
+  const btn = $('#theme-toggle');
+  if (!btn) return;
+  const light = currentTheme() === 'light';
+  btn.setAttribute('aria-pressed', String(light));
+  btn.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+}
+
+function toggleTheme() {
+  const next = currentTheme() === 'light' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem('theme', next); } catch { /* private mode */ }
+  syncThemeButton();
+}
+
+function initTheme() {
+  const btn = $('#theme-toggle');
+  if (btn) btn.addEventListener('click', toggleTheme);
+  syncThemeButton();
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+    let stored = null;
+    try { stored = localStorage.getItem('theme'); } catch { /* private mode */ }
+    if (!stored) {
+      document.documentElement.dataset.theme = e.matches ? 'light' : 'dark';
+      syncThemeButton();
+    }
+  });
+}
+
 let allEntries = [];
 let initialized = false;
 
@@ -206,4 +241,7 @@ async function init() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  init();
+});
