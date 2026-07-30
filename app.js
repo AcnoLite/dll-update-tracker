@@ -13,8 +13,169 @@ const VENDOR_ORDER = ['microsoft','amd','nvidia','intel','vulkan','audio','other
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
+/* ================= Theme ================= */
+
+function currentTheme() {
+  return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+}
+
+function syncThemeButton() {
+  const btn = $('#theme-toggle');
+  if (!btn) return;
+  const light = currentTheme() === 'light';
+  btn.setAttribute('aria-pressed', String(light));
+  btn.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+}
+
+function toggleTheme() {
+  const next = currentTheme() === 'light' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = next;
+  try { localStorage.setItem('theme', next); } catch { /* private mode */ }
+  syncThemeButton();
+}
+
+function initTheme() {
+  const btn = $('#theme-toggle');
+  if (btn) btn.addEventListener('click', toggleTheme);
+  syncThemeButton();
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+    let stored = null;
+    try { stored = localStorage.getItem('theme'); } catch { /* private mode */ }
+    if (!stored) {
+      document.documentElement.dataset.theme = e.matches ? 'light' : 'dark';
+      syncThemeButton();
+    }
+  });
+}
+
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FINE_POINTER = window.matchMedia('(pointer: fine)').matches;
+
 let allEntries = [];
 let initialized = false;
+let revealObserver = null;
+let dashboardReady = false;
+
+/* ================= Effects & UX ================= */
+
+function animateValue(el, target) {
+  if (REDUCED_MOTION || target === 0) {
+    el.textContent = String(target);
+    return;
+  }
+  const duration = 600;
+  const start = performance.now();
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = String(Math.round(target * eased));
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function attachCardEffects(card) {
+  if (!FINE_POINTER || REDUCED_MOTION) return;
+  let rafId = null;
+  let lastEvent = null;
+
+  card.addEventListener('mousemove', (e) => {
+    lastEvent = e;
+    if (rafId !== null) return;
+    rafId = requestAnimationFrame(() => {
+      rafId = null;
+      if (!lastEvent) return;
+      const rect = card.getBoundingClientRect();
+      const x = lastEvent.clientX - rect.left;
+      const y = lastEvent.clientY - rect.top;
+      card.style.setProperty('--mouse-x', `${x}px`);
+      card.style.setProperty('--mouse-y', `${y}px`);
+      const rx = ((y / rect.height) - 0.5) * -4;
+      const ry = ((x / rect.width) - 0.5) * 4;
+      card.style.transform = `perspective(800px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+    });
+  });
+
+  card.addEventListener('mouseleave', () => {
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+    lastEvent = null;
+    card.style.transition = 'transform 0.35s ease-out';
+    card.style.transform = '';
+    setTimeout(() => { card.style.transition = ''; }, 350);
+  });
+}
+
+function getRevealObserver() {
+  if (revealObserver) return revealObserver;
+  revealObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add('revealed');
+      revealObserver.unobserve(entry.target);
+    }
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+  return revealObserver;
+}
+
+function prepareReveals(container) {
+  const cards = [...container.querySelectorAll('.sdk-card')];
+  if (REDUCED_MOTION || dashboardReady) {
+    cards.forEach(attachCardEffects);
+    return;
+  }
+  const observer = getRevealObserver();
+  cards.forEach((card, i) => {
+    card.style.setProperty('--reveal-delay', `${Math.min(i, 14) * 30}ms`);
+    card.classList.add('reveal');
+    const onRevealEnd = (e) => {
+      if (e.propertyName !== 'opacity' && e.propertyName !== 'transform') return;
+      card.classList.remove('reveal', 'revealed');
+      card.style.removeProperty('--reveal-delay');
+      attachCardEffects(card);
+      card.removeEventListener('transitionend', onRevealEnd);
+    };
+    card.addEventListener('transitionend', onRevealEnd);
+    observer.observe(card);
+  });
+}
+
+function isDefaultFilters() {
+  return $('#search-input').value.trim() === ''
+    && $$('.vendor-chip.active').length === VENDOR_ORDER.length;
+}
+
+function updateResetButton() {
+  $('#reset-filters').hidden = isDefaultFilters();
+}
+
+function resetFilters() {
+  $('#search-input').value = '';
+  $$('.vendor-chip').forEach(c => c.classList.add('active'));
+  renderDashboard();
+}
+
+function initStickyControls() {
+  const bar = $('#controls-sticky');
+  if (!bar) return;
+  const onScroll = () => bar.classList.toggle('scrolled', window.scrollY > 8);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+}
+
+function initKeyboardShortcuts() {
+  document.addEventListener('keydown', (e) => {
+    const tag = document.activeElement && document.activeElement.tagName;
+    const typing = tag === 'INPUT' || tag === 'TEXTAREA';
+    if (e.key === '/' && !typing) {
+      e.preventDefault();
+      $('#search-input').focus();
+    } else if (e.key === 'Escape' && document.activeElement === $('#search-input')) {
+      $('#search-input').value = '';
+      $('#search-input').blur();
+      renderDashboard();
+    }
+  });
+}
 
 function fmtDate(dateStr) {
   if (!dateStr) return '';
@@ -41,12 +202,14 @@ function renderStats(entries) {
   const manual = entries.filter(e => e.manual).length;
 
   $('#stats-bar').innerHTML = `
-    <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">SDKs tracked</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--green)">${stable}</div><div class="stat-label">Stable</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--orange)">${pre}</div><div class="stat-label">Pre-release</div></div>
-    <div class="stat-card"><div class="stat-value">${auto}</div><div class="stat-label">Auto</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--text-dim)">${manual}</div><div class="stat-label">Manual</div></div>
+    <div class="stat-card"><div class="stat-value" data-target="${total}">0</div><div class="stat-label">SDKs tracked</div></div>
+    <div class="stat-card"><div class="stat-value" data-target="${stable}" style="color:var(--green)">0</div><div class="stat-label">Stable</div></div>
+    <div class="stat-card"><div class="stat-value" data-target="${pre}" style="color:var(--orange)">0</div><div class="stat-label">Pre-release</div></div>
+    <div class="stat-card"><div class="stat-value" data-target="${auto}">0</div><div class="stat-label">Auto</div></div>
+    <div class="stat-card"><div class="stat-value" data-target="${manual}" style="color:var(--text-dim)">0</div><div class="stat-label">Manual</div></div>
   `;
+
+  $$('#stats-bar .stat-value').forEach(el => animateValue(el, Number(el.dataset.target) || 0));
 }
 
 function renderVendorFilters() {
@@ -77,6 +240,7 @@ function renderDashboard() {
 
   if (filtered.length === 0) {
     main.innerHTML = `<div id="empty-state"><p>No SDK found</p><p class="hint">Try changing your search or filters</p></div>`;
+    updateResetButton();
     return;
   }
 
@@ -102,6 +266,10 @@ function renderDashboard() {
         </section>
       `;
     }).join('');
+
+  prepareReveals(main);
+  updateResetButton();
+  dashboardReady = true;
 }
 
 function renderCard(entry, vendorColor) {
@@ -195,6 +363,7 @@ async function init() {
         renderDashboard();
       });
       $('#search-input').addEventListener('input', renderDashboard);
+      $('#reset-filters').addEventListener('click', resetFilters);
     }
 
     renderStats(allEntries);
@@ -206,4 +375,9 @@ async function init() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  initStickyControls();
+  initKeyboardShortcuts();
+  init();
+});

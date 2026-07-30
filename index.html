@@ -4,22 +4,65 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DLL Update Tracker</title>
+  <meta name="description" content="Automatic version tracking of graphics, audio and development SDKs">
+  <script>
+    (function () {
+      var theme = null;
+      try { theme = localStorage.getItem('theme'); } catch (e) { /* private mode */ }
+      if (theme !== 'light' && theme !== 'dark') {
+        theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+      }
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="aurora" aria-hidden="true">
+    <div class="aurora-blob blob-1"></div>
+    <div class="aurora-blob blob-2"></div>
+    <div class="aurora-blob blob-3"></div>
+  </div>
+
   <header>
     <h1>DLL Update Tracker</h1>
     <p class="subtitle">Automatic version tracking of graphics, audio and development SDKs</p>
+    <button id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="4"></circle>
+        <line x1="12" y1="1" x2="12" y2="4"></line>
+        <line x1="12" y1="20" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"></line>
+        <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="4" y2="12"></line>
+        <line x1="20" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"></line>
+        <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
   </header>
 
   <section id="stats-bar" role="status" aria-live="polite"></section>
 
-  <section id="controls">
-    <div class="search-wrapper">
-      <input type="text" id="search-input" placeholder="Search SDK (name, role, DLL...)" autocomplete="off">
-    </div>
-    <div id="vendor-filters"></div>
-  </section>
+  <div id="controls-sticky">
+    <section id="controls">
+      <div class="search-row">
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="search-input" placeholder="Search SDK (name, role, DLL...)" autocomplete="off">
+          <kbd class="search-kbd">/</kbd>
+        </div>
+        <button id="reset-filters" type="button" hidden>Reset</button>
+      </div>
+      <div id="vendor-filters"></div>
+    </section>
+  </div>
 
   <main id="dashboard" aria-label="SDK list"></main>
 
