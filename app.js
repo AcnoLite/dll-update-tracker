@@ -5,7 +5,7 @@ const VENDOR_META = {
   intel:     { color: '#0071C5', label: 'Intel' },
   vulkan:    { color: '#AC4A2A', label: 'Vulkan' },
   audio:     { color: '#8B5CF6', label: 'Audio' },
-  other:     { color: '#6B7280', label: 'Autres' },
+  other:     { color: '#6B7280',     label: 'Other' },
 };
 
 const VENDOR_ORDER = ['microsoft','amd','nvidia','intel','vulkan','audio','other'];
@@ -20,7 +20,7 @@ function fmtDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('fr-FR', { month: 'short', day: 'numeric', year: 'numeric' });
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function isValidUrl(str) {
@@ -41,11 +41,11 @@ function renderStats(entries) {
   const manual = entries.filter(e => e.manual).length;
 
   $('#stats-bar').innerHTML = `
-    <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">SDKs suivis</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--green)">${stable}</div><div class="stat-label">Stables</div></div>
+    <div class="stat-card"><div class="stat-value">${total}</div><div class="stat-label">SDKs tracked</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--green)">${stable}</div><div class="stat-label">Stable</div></div>
     <div class="stat-card"><div class="stat-value" style="color:var(--orange)">${pre}</div><div class="stat-label">Pre-release</div></div>
     <div class="stat-card"><div class="stat-value">${auto}</div><div class="stat-label">Auto</div></div>
-    <div class="stat-card"><div class="stat-value" style="color:var(--text-dim)">${manual}</div><div class="stat-label">Manuels</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--text-dim)">${manual}</div><div class="stat-label">Manual</div></div>
   `;
 }
 
@@ -76,7 +76,7 @@ function renderDashboard() {
   const main = $('#dashboard');
 
   if (filtered.length === 0) {
-    main.innerHTML = `<div id="empty-state"><p>Aucun SDK trouvé</p><p class="hint">Essayez de modifier votre recherche ou vos filtres</p></div>`;
+    main.innerHTML = `<div id="empty-state"><p>No SDK found</p><p class="hint">Try changing your search or filters</p></div>`;
     return;
   }
 
@@ -112,7 +112,7 @@ function renderCard(entry, vendorColor) {
 
   const dllHtml = dlls.length > 0
     ? dlls.map(d => `<span class="dll-badge">${escapeHtml(d)}</span>`).join('')
-    : '<span class="dll-badge none">Aucune DLL</span>';
+    : '<span class="dll-badge none">No DLL</span>';
 
   let stableHtml = '';
   if (stable && stable.version) {
@@ -150,7 +150,7 @@ function renderCard(entry, vendorColor) {
     <article class="sdk-card" style="--vendor-color:${vendorColor}">
       <div class="sdk-card-header">
         <span class="sdk-name">${escapeHtml(entry.name)}</span>
-        ${isManual ? `<span class="sdk-lock" title="Mise à jour manuelle">🔒</span>` : ''}
+        ${isManual ? `<span class="sdk-lock" title="Manual update">🔒</span>` : ''}
       </div>
       ${entry.role ? `<div class="sdk-role">${escapeHtml(entry.role)}</div>` : ''}
       <div class="sdk-dlls">${dllHtml}</div>
@@ -164,7 +164,7 @@ function renderCard(entry, vendorColor) {
 }
 
 function showLoading() {
-  $('#dashboard').innerHTML = `<div class="loading"><div class="spinner"></div><span>Chargement des données...</span></div>`;
+  $('#dashboard').innerHTML = `<div class="loading"><div class="spinner"></div><span>Loading data...</span></div>`;
   $('#stats-bar').innerHTML = '';
 }
 
@@ -172,7 +172,7 @@ function showError(msg) {
   $('#dashboard').innerHTML = `
     <div id="error-state">
       <p>${escapeHtml(msg)}</p>
-      <button class="retry-btn" onclick="init()">Réessayer</button>
+      <button class="retry-btn" onclick="init()">Retry</button>
     </div>`;
   $('#stats-bar').innerHTML = '';
 }
@@ -202,7 +202,7 @@ async function init() {
     renderDashboard();
   } catch (err) {
     console.error('Failed to load tracker data:', err);
-    showError('Impossible de charger les données. Vérifiez que data/tracker.json existe.');
+    showError('Unable to load data. Check that data/tracker.json exists.');
   }
 }
 

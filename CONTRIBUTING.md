@@ -3,25 +3,25 @@
 ## Project structure
 
 ```
-data/tracker.json       # Données : liste des SDK/technos trackés
+data/tracker.json       # Data: list of tracked SDKs/technologies
 scripts/
-  fetch_versions.py     # Récupère les versions depuis GitHub/NuGet/web
-  generate_readme.py    # Génère README.md depuis tracker.json
-  requirements.txt      # Dépendances Python
+  fetch_versions.py     # Fetches versions from GitHub/NuGet/web
+  generate_readme.py    # Generates README.md from tracker.json
+  requirements.txt      # Python dependencies
 .github/workflows/
-  update_tracker.yml    # CI : cron hebdo + workflow_dispatch
+  update_tracker.yml    # CI: weekly cron + workflow_dispatch
 ```
 
-## Ajouter un nouveau SDK
+## Adding a new SDK
 
-Éditer `data/tracker.json` et ajouter une entrée dans `entries` :
+Edit `data/tracker.json` and add an entry in `entries`:
 
 ```json
 {
   "id": "mon-sdk",
   "vendor": "microsoft",
   "name": "Mon SDK",
-  "role": "Description courte de ce que ça fait",
+  "role": "Short description of what it does",
   "dlls": ["ma-dll.dll"],
   "sources": [
     { "type": "github", "repo": "vendor/mon-repo" }
@@ -35,28 +35,28 @@ scripts/
 }
 ```
 
-Le CI mettra automatiquement à jour `versions` et `last_checked`.
+The CI will automatically update `versions` and `last_checked`.
 
-### Types de sources
+### Source types
 
-- **`github`** — releases GitHub (priorité). `"repo": "owner/repo"`
-- **`github-tags`** — tags GitHub (si le repo n'a pas de releases). `"repo": "owner/repo"`
-- **`nuget`** — package NuGet. `"package_id": "Package.Name"`
-- **`scraping-json`** — endpoint JSON. `"url": "...", "json_path": "version"` (chemin délimité par `.`)
-- **`scraping-html`** — page HTML avec CSS selector + regex optionnel. `"url": "...", "selector": "h1", "regex": "v(\\d+\\.\\d+)"`
+- **`github`** — GitHub releases (preferred). `"repo": "owner/repo"`
+- **`github-tags`** — GitHub tags (if the repo has no releases). `"repo": "owner/repo"`
+- **`nuget`** — NuGet package. `"package_id": "Package.Name"`
+- **`scraping-json`** — JSON endpoint. `"url": "...", "json_path": "version"` (dot-delimited path)
+- **`scraping-html`** — HTML page with CSS selector + optional regex. `"url": "...", "selector": "h1", "regex": "v(\\d+\\.\\d+)"`
 
-Si plusieurs sources sont listées, elles sont essayées dans l'ordre. La première qui répond est utilisée.
+If multiple sources are listed, they are tried in order. The first one to respond is used.
 
-### Clés d'entrée
+### Entry keys
 
-| Champ | Description |
+| Field | Description |
 |---|---|
-| `vendor` | Groupe d'affichage : `microsoft`, `amd`, `nvidia`, `intel`, `vulkan`, `audio`, `other` |
-| `manual` | `true` = ne pas fetch automatiquement, mise à jour manuelle |
-| `dlls` | Liste des DLL produites |
-| `role` | Description du rôle technique |
+| `vendor` | Display group: `microsoft`, `amd`, `nvidia`, `intel`, `vulkan`, `audio`, `other` |
+| `manual` | `true` = do not fetch automatically, manual update only |
+| `dlls` | List of produced DLLs |
+| `role` | Description of the technical role |
 
-## En local
+## Running locally
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
@@ -66,9 +66,9 @@ python scripts/fetch_versions.py
 python scripts/generate_readme.py
 ```
 
-Le CI tourne automatiquement chaque lundi à 8h UTC. Tu peux aussi déclencher manuellement le workflow depuis l'onglet Actions de GitHub.
+The CI runs automatically every Monday at 8 AM UTC. You can also manually trigger the workflow from the Actions tab on GitHub.
 
-## Proposer un changement
+## Proposing a change
 
-1. Créer une branche, commiter, pousser
-2. Ouvrir une PR sur `main`
+1. Create a branch, commit, push
+2. Open a PR against `main`

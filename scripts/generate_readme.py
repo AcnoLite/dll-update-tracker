@@ -17,7 +17,7 @@ VENDOR_LABELS = {
     "intel": ("Intel", "\U0001f7ea"),
     "vulkan": ("Vulkan", "\U0001f7e8"),
     "audio": ("Audio", "\U0001f50a"),
-    "other": ("Autres", "\U0001f4e6"),
+    "other": ("Other", "\U0001f4e6"),
 }
 
 
@@ -45,7 +45,7 @@ def source_links(entry):
             parts.append(f"[Lunarg](https://vulkan.lunarg.com/sdk/home)")
         elif t == "scraping":
             url = src.get("url", "#")
-            label = src.get("label", "Site web")
+            label = src.get("label", "Website")
             parts.append(f"[{label}]({url})")
     return " / ".join(parts) if parts else "-"
 
@@ -65,7 +65,7 @@ def build_rows(entries):
         if dlls:
             dlls_str = ", ".join(f"`{d}`" for d in dlls)
         else:
-            dlls_str = "\u26a0\ufe0f Aucune"
+            dlls_str = "\u26a0\ufe0f None"
 
         src = source_links(e)
         checked = e.get("last_checked") or "-"
@@ -101,7 +101,7 @@ def vendor_section(vendor_key, entries):
     label, emoji = VENDOR_LABELS.get(vendor_key, (vendor_key, ""))
     lines = []
     lines.append(f"## {emoji} {label}\n")
-    lines.append("| SDK / Techno | DLLs | Source | Stable | Pre-release | Verif |")
+    lines.append("| SDK / Technology | DLLs | Source | Stable | Pre-release | Checked |")
     lines.append("|---|---|---|---|---|---|")
 
     for r in build_rows(entries):
@@ -135,11 +135,11 @@ def main():
 
     lines = []
     lines.append("# DLL Update Tracker\n")
-    lines.append(f"> Derniere mise a jour : **{today}**")
-    lines.append(f"> **{total}** SDK/technos trackees | **{with_stable}** version stable | **{with_pre}** pre-release | **{auto}** auto-trackees")
+    lines.append(f"> Last updated: **{today}**")
+    lines.append(f"> **{total}** SDKs/technologies tracked | **{with_stable}** stable | **{with_pre}** pre-release | **{auto}** auto-tracked")
     lines.append(">")
-    lines.append("> Suivi automatique des DLL graphiques, audio et outils (upscaling, frame gen, low latency, ray tracing, physique, debug, audio middleware).")
-    lines.append("> Les versions sont fetches via les APIs GitHub, NuGet et scraping web.")
+    lines.append("> Automatic tracking of graphics, audio and tools DLLs (upscaling, frame gen, low latency, ray tracing, physics, debug, audio middleware).")
+    lines.append("> Versions are fetched via GitHub APIs, NuGet and web scraping.")
     lines.append("")
     lines.append("---\n")
 
@@ -149,17 +149,17 @@ def main():
             lines.append("---\n")
 
     lines.append("")
-    lines.append("## Mise a jour\n")
+    lines.append("## Update\n")
     lines.append("```bash")
-    lines.append("# Tout d'un coup")
+    lines.append("# All at once")
     lines.append("python scripts/fetch_versions.py && python scripts/generate_readme.py")
     lines.append("")
-    lines.append("# Ou separement")
+    lines.append("# Or separately")
     lines.append("python scripts/fetch_versions.py")
     lines.append("python scripts/generate_readme.py")
     lines.append("```")
     lines.append("")
-    lines.append("GitHub Actions : cron chaque lundi 8h UTC + declenchement manuel.")
+    lines.append("GitHub Actions: cron every Monday 8am UTC + manual trigger.")
     lines.append("")
 
     readme_path = os.path.abspath(README_PATH)
