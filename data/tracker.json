@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "Graphics DLL version tracker (upscaling, frame gen, low latency, ray tracing, physics, debug)",
-    "last_updated": "2026-10-26",
+    "last_updated": "2026-11-02",
     "schema_version": "2.0"
   },
   "entries": [
@@ -27,16 +27,16 @@
       ],
       "versions": {
         "stable": {
-          "version": "1.619.5",
-          "date": "2026-07-31"
+          "version": "1.620.1",
+          "date": "2026-10-28"
         },
         "prerelease": {
-          "version": "1.721.2-preview",
-          "date": "2026-07-08"
+          "version": "1.722.0-preview",
+          "date": "2026-10-28"
         }
       },
       "active_source": "github:microsoft/DirectX-Headers",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "directstorage",
@@ -64,7 +64,7 @@
         }
       },
       "active_source": "nuget:Microsoft.Direct3D.DirectStorage",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "dxc",
@@ -97,7 +97,7 @@
         }
       },
       "active_source": "github:microsoft/DirectXShaderCompiler",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "directxtk",
@@ -120,7 +120,7 @@
         "prerelease": null
       },
       "active_source": "nuget:directxtk_desktop_win10",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "pix",
@@ -150,7 +150,7 @@
         "prerelease": null
       },
       "active_source": "nuget:WinPixEventRuntime",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "ags-sdk",
@@ -175,7 +175,7 @@
         "prerelease": null
       },
       "active_source": "github:GPUOpen-LibrariesAndSDKs/AGS_SDK",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "d3d12-memory-allocator",
@@ -198,7 +198,7 @@
         "prerelease": null
       },
       "active_source": "github:GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "fidelityfx-sdk",
@@ -217,13 +217,13 @@
       ],
       "versions": {
         "stable": {
-          "version": "2.3.0",
-          "date": "2026-06-24"
+          "version": "2.4.0",
+          "date": "2026-10-28"
         },
         "prerelease": null
       },
       "active_source": "github:GPUOpen-LibrariesAndSDKs/FidelityFX-SDK",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "anti-lag-2",
@@ -248,7 +248,7 @@
         "prerelease": null
       },
       "active_source": "github:GPUOpen-LibrariesAndSDKs/AntiLag2-SDK",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "streamline",
@@ -271,7 +271,7 @@
         "prerelease": null
       },
       "active_source": "github:NVIDIA-RTX/Streamline",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "dlss",
@@ -302,7 +302,7 @@
         "prerelease": null
       },
       "active_source": "github:NVIDIA/DLSS",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "reflex",
@@ -325,7 +325,7 @@
         "prerelease": null
       },
       "active_source": "github:NVIDIA-RTX/Streamline",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "nvapi",
@@ -372,7 +372,7 @@
         "prerelease": null
       },
       "active_source": "github:NVIDIAGameWorks/NVIDIAImageScaling",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "rtxgi",
@@ -395,7 +395,7 @@
         "prerelease": null
       },
       "active_source": "github:NVIDIA-RTX/RTXGI",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "rtxdi",
@@ -418,7 +418,7 @@
         "prerelease": null
       },
       "active_source": "github:NVIDIA-RTX/RTXDI",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "physx",
@@ -435,13 +435,13 @@
       ],
       "versions": {
         "stable": {
-          "version": "ovphysx-0.7.0",
-          "date": "2026-10-15"
+          "version": "110.3-omni-and-physx-5.9.1",
+          "date": "2026-10-27"
         },
         "prerelease": null
       },
       "active_source": "github:NVIDIA-Omniverse/PhysX",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "xess",
@@ -469,7 +469,7 @@
         "prerelease": null
       },
       "active_source": "github:intel/xess",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "vulkan-loader",
@@ -496,7 +496,7 @@
         "prerelease": null
       },
       "active_source": "scraping-json:https://vulkan.lunarg.com/sdk/latest.json",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "swiftshader",
@@ -540,11 +540,11 @@
         },
         "prerelease": {
           "version": "latest",
-          "date": "2026-10-26"
+          "date": "2026-11-02"
         }
       },
       "active_source": "github:kcat/openal-soft",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "steam-audio",
@@ -574,7 +574,7 @@
         }
       },
       "active_source": "github:ValveSoftware/steam-audio",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "xaudio2-redist",
@@ -598,7 +598,7 @@
         "prerelease": null
       },
       "active_source": "nuget:Microsoft.XAudio2.Redist",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "miniaudio",
@@ -615,13 +615,13 @@
       ],
       "versions": {
         "stable": {
-          "version": "0.11.25",
-          "date": "2026-03-03"
+          "version": "0.11.26",
+          "date": "2026-10-31"
         },
         "prerelease": null
       },
       "active_source": "github:mackron/miniaudio",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "soloud",
@@ -644,7 +644,7 @@
         "prerelease": null
       },
       "active_source": "github:jarikomppa/soloud",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "nrd",
@@ -661,16 +661,13 @@
       ],
       "versions": {
         "stable": {
-          "version": "4.17.3",
-          "date": "2026-04-30"
-        },
-        "prerelease": {
           "version": "4.18.0",
-          "date": "2026-10-09"
-        }
+          "date": "2026-10-30"
+        },
+        "prerelease": null
       },
       "active_source": "github:NVIDIA-RTX/NRD",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "nri",
@@ -686,16 +683,13 @@
       ],
       "versions": {
         "stable": {
-          "version": "180",
-          "date": "2026-06-22"
+          "version": "191",
+          "date": "2026-10-30"
         },
-        "prerelease": {
-          "version": "190",
-          "date": "2026-10-09"
-        }
+        "prerelease": null
       },
       "active_source": "github:NVIDIA-RTX/NRi",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "nvrhi",
@@ -739,7 +733,7 @@
         "prerelease": null
       },
       "active_source": "github:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "bullet-physics",
@@ -762,7 +756,7 @@
         "prerelease": null
       },
       "active_source": "github:bulletphysics/bullet3",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "openxr",
@@ -789,7 +783,7 @@
         }
       },
       "active_source": "github:KhronosGroup/OpenXR-SDK",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "renderdoc",
@@ -808,13 +802,13 @@
       ],
       "versions": {
         "stable": {
-          "version": "1.46",
-          "date": "2026-08-31"
+          "version": "1.47",
+          "date": "2026-10-31"
         },
         "prerelease": null
       },
       "active_source": "github:baldurk/renderdoc",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "vc-redist",
@@ -843,7 +837,7 @@
         "prerelease": null
       },
       "active_source": "scraping-html:https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
-      "last_checked": "2026-10-26"
+      "last_checked": "2026-11-02"
     },
     {
       "id": "fmod",
