@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Fetch versions from GitHub releases and tags, NuGet, Vulkan SDK, and web scraping."""
+"""Fetch versions from GitHub (releases, tags, commits), NuGet, JSON endpoints
+and web pages, plus the file version of each DLL (see binaries.py)."""
 
 import json
 import os
@@ -7,21 +8,20 @@ import re
 import sys
 from datetime import datetime, timezone
 
-import requests
+import binaries
+import net
 
 TRACKER_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "tracker.json")
-GITHUB_API = "https://api.github.com"
 NUGET_API = "https://api.nuget.org/v3-flatcontainer"
 
 PRERELEASE_RE = re.compile(r"-(alpha|beta|preview|rc|dev|nightly|pre)", re.IGNORECASE)
 
 
-def get_github_headers():
-    headers = {"Accept": "application/vnd.github+json"}
-    token = os.environ.get("GITHUB_TOKEN")
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-    return headers
+def iso_day(timestamp):
+    """"2026-10-16T12:00:00Z" -> "2026-10-16"; None stays None."""
+    if not timestamp:
+        return None
+    return datetime.fromisoformat(timestamp.replace("Z", "+00:00")).strftime("%Y-%m-%d")
 
 
 def parse_version(tag):
@@ -58,13 +58,7 @@ def is_outdated_prerelease(stable, prerelease):
 
 def fetch_github_releases(repo):
     """Fetch releases from a GitHub repo. Returns (stable, prerelease)."""
-    url = f"{GITHUB_API}/repos/{repo}/releases"
-    params = {"per_page": 50}
-    headers = get_github_headers()
-
-    resp = requests.get(url, headers=headers, params=params, timeout=30)
-    resp.raise_for_status()
-    releases = resp.json()
+    releases = net.github_json(f"/repos/{repo}/releases", params={"per_page": 50})
 
     stable = None
     prerelease = None
@@ -76,12 +70,7 @@ def fetch_github_releases(repo):
         version = parse_version(rel["tag_name"])
         if not looks_like_version(version):
             continue
-        date_str = rel.get("published_at", "")
-        date = None
-        if date_str:
-            date = datetime.fromisoformat(date_str.replace("Z", "+00:00")).strftime("%Y-%m-%d")
-
-        entry = {"version": version, "date": date}
+        entry = {"version": version, "date": iso_day(rel.get("published_at"))}
 
         if rel.get("prerelease"):
             if prerelease is None:
@@ -100,49 +89,67 @@ def fetch_github_releases(repo):
 
 
 def fetch_github_tags(repo):
-    """Fallback: fetch tags from a GitHub repo (for repos without releases).
-    Uses tag name as version, no date available."""
-    url = f"{GITHUB_API}/repos/{repo}/git/refs/tags"
+    """Fallback for repos without releases: the highest tag by version number.
+
+    The refs API lists tags alphabetically ("3.4.2" after "3.10.0"), so tags
+    are sorted by their numeric parts. The date is the tagged commit's date.
+    """
+    refs = net.github_json(f"/repos/{repo}/git/refs/tags")
+    tags = [ref["ref"].removeprefix("refs/tags/") for ref in refs]
+    tags = [t for t in tags if looks_like_version(parse_version(t))]
+    tags.sort(key=lambda t: version_key(parse_version(t)), reverse=True)
+
+    stable_tag = next((t for t in tags if not PRERELEASE_RE.search(t)), None)
+    pre_tag = next((t for t in tags if PRERELEASE_RE.search(t)), None)
+    if stable_tag and pre_tag and version_key(parse_version(pre_tag)) <= version_key(parse_version(stable_tag)):
+        pre_tag = None
+
+    def describe(tag):
+        if not tag:
+            return None
+        commit = net.github_json(f"/repos/{repo}/commits/{tag}")
+        return {"version": parse_version(tag), "date": iso_day(commit["commit"]["committer"]["date"])}
+
+    return describe(stable_tag), describe(pre_tag)
+
+
+# ─── GitHub commits ───────────────────────────────────────────────
+
+def fetch_github_commits(source):
+    """Version from the commit history, for repos that never tag a release.
+
+    With ``regex``: the first recent commit whose message matches gives the
+    version (NVAPI commits read "R620-Developer SDK"). Without it: a rolling
+    version, the short sha of the latest commit, flagged ``rolling``.
+    """
+    repo = source["repo"]
     params = {"per_page": 50}
-    headers = get_github_headers()
+    if source.get("branch"):
+        params["sha"] = source["branch"]
+    commits = net.github_json(f"/repos/{repo}/commits", params=params)
+    if not commits:
+        return None
 
-    resp = requests.get(url, headers=headers, params=params, timeout=30)
-    resp.raise_for_status()
-    refs = resp.json()
+    pattern = source.get("regex")
+    if not pattern:
+        latest = commits[0]
+        return {"version": latest["sha"][:7], "date": iso_day(latest["commit"]["committer"]["date"]),
+                "rolling": True}
 
-    stable = None
-    prerelease = None
-
-    for ref in refs:
-        tag = ref["ref"].replace("refs/tags/", "")
-        version = parse_version(tag)
-        if not looks_like_version(version):
-            continue
-        is_pre = bool(PRERELEASE_RE.search(version))
-
-        entry = {"version": version, "date": None}
-
-        if is_pre:
-            if prerelease is None:
-                prerelease = entry
-        else:
-            if stable is None:
-                stable = entry
-
-        if stable and prerelease:
-            break
-
-    return stable, prerelease
+    regex = re.compile(pattern)
+    for commit in commits:
+        match = regex.search(commit["commit"]["message"])
+        if match:
+            version = match.group(1) if match.groups() else match.group(0)
+            return {"version": version, "date": iso_day(commit["commit"]["committer"]["date"])}
+    return None
 
 
 # ─── NuGet ────────────────────────────────────────────────────────
 
 def fetch_nuget_versions(package_id):
     """Fetch versions from NuGet. Returns (stable, prerelease)."""
-    url = f"{NUGET_API}/{package_id.lower()}/index.json"
-    resp = requests.get(url, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
+    data = net.get_json(f"{NUGET_API}/{package_id.lower()}/index.json")
     versions = data.get("versions", [])
 
     stable = None
@@ -176,16 +183,12 @@ def _get_nuget_date(package_id, version):
     """Try to get the publish date from the NuGet registration API."""
     url = f"https://api.nuget.org/v3/registration5-gz-semver2/{package_id.lower()}/index.json"
     try:
-        resp = requests.get(url, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
+        data = net.get_json(url)
         for page in data.get("items", []):
             for item in page.get("items", []):
                 entry = item.get("catalogEntry", {})
                 if entry.get("version") == version:
-                    published = entry.get("published", "")
-                    if published:
-                        return datetime.fromisoformat(published.replace("Z", "+00:00")).strftime("%Y-%m-%d")
+                    return iso_day(entry.get("published"))
     except Exception:
         pass
     return None
@@ -201,9 +204,7 @@ def fetch_scraping_json(source):
     if not url:
         return None
 
-    resp = requests.get(url, timeout=30, allow_redirects=True)
-    resp.raise_for_status()
-    data = resp.json()
+    data = net.get_json(url)
 
     # Navigate nested path like "windows" or "windows.x64"
     value = data
@@ -297,6 +298,11 @@ def fetch_entry(entry):
                 if stable or prerelease:
                     return stable, prerelease, f"nuget:{source['package_id']}", errors
 
+            elif src_type == "github-commits":
+                result = fetch_github_commits(source)
+                if result:
+                    return result, None, f"github-commits:{source['repo']}", errors
+
             elif src_type == "scraping-json":
                 result = fetch_scraping_json(source)
                 if result:
@@ -320,12 +326,25 @@ def fetch_entry(entry):
     return None, None, None, errors
 
 
-def report_failure(entry_id, messages):
+def report_failure(entry_id, messages, title="Fetch failed"):
     """Print a failure, as a GitHub Actions annotation when running in CI."""
     detail = "; ".join(messages) if messages else "no source returned a version"
     if os.environ.get("GITHUB_ACTIONS") == "true":
-        print(f"::warning title=Fetch failed: {entry_id}::{detail}")
+        print(f"::warning title={title}: {entry_id}::{detail}")
     return f"{entry_id}: {detail}"
+
+
+def update_dll_versions(entry):
+    """Refresh entry["dll_versions"] from its "binaries" locators. Returns the error messages."""
+    locators = entry.get("binaries") or []
+    if not locators:
+        return []
+    found, dll_errors = binaries.fetch_dll_versions(locators, entry.get("dll_versions"))
+    if found:
+        entry["dll_versions"] = found
+        listed = ", ".join(f"{name}={rec['version']}" for name, rec in found.items())
+        print(f"      dlls: {listed}")
+    return dll_errors
 
 
 def main():
@@ -338,13 +357,20 @@ def main():
     skipped = 0
     attempted = 0
     errors = []
+    dll_warnings = []
 
     for entry in tracker["entries"]:
         sources = entry.get("sources", [])
-        if not sources or entry.get("manual"):
+        if entry.get("manual") or not (sources or entry.get("binaries")):
             skipped += 1
             if entry.get("manual"):
                 print(f"  [{entry['id']}] (manual) ... skipped")
+            continue
+
+        if not sources:
+            print(f"  [{entry['id']}] (binaries only)")
+            for message in update_dll_versions(entry):
+                dll_warnings.append(report_failure(entry["id"], [message], "DLL version failed"))
             continue
 
         attempted += 1
@@ -368,14 +394,22 @@ def main():
             print("FAILED")
             errors.append(report_failure(entry["id"], source_errors))
 
+        # DLL versions are independent of the SDK version: a failure here is a
+        # warning and keeps the previously known DLL versions.
+        for message in update_dll_versions(entry):
+            dll_warnings.append(report_failure(entry["id"], [message], "DLL version failed"))
+
     tracker["_meta"]["last_updated"] = today
 
     with open(tracker_path, "w", encoding="utf-8") as f:
         json.dump(tracker, f, indent=2, ensure_ascii=False)
 
-    print(f"\nDone: {updated} updated, {skipped} skipped, {len(errors)} failed.")
+    print(f"\nDone: {updated} updated, {skipped} skipped, {len(errors)} failed, "
+          f"{len(dll_warnings)} DLL warnings.")
     for err in errors:
         print(f"  ERROR: {err}", file=sys.stderr)
+    for warning in dll_warnings:
+        print(f"  WARNING: {warning}", file=sys.stderr)
 
     # Partial failures still exit 0 so CI commits the entries that did update.
     # Exit 1 only when every automatic entry failed: that is an outage (rate

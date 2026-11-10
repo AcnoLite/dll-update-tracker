@@ -29,7 +29,7 @@ def release(tag, published, prerelease=False, draft=False):
 
 class GithubReleasesTest(unittest.TestCase):
     def fetch(self, releases):
-        with mock.patch.object(fv.requests, "get", return_value=fake_response(releases)):
+        with mock.patch.object(fv.net.SESSION, "get", return_value=fake_response(releases)):
             return fv.fetch_github_releases("owner/repo")
 
     def test_prerelease_older_than_stable_is_dropped(self):
@@ -79,7 +79,7 @@ class GithubReleasesTest(unittest.TestCase):
 class NugetTest(unittest.TestCase):
     def test_prerelease_older_than_stable_is_dropped(self):
         index = {"versions": ["1.0.0", "1.1.0-preview1", "1.1.0", "1.2.0"]}
-        with mock.patch.object(fv.requests, "get", return_value=fake_response(index)), \
+        with mock.patch.object(fv.net.SESSION, "get", return_value=fake_response(index)), \
              mock.patch.object(fv, "_get_nuget_date", return_value=None):
             stable, pre = fv.fetch_nuget_versions("Some.Package")
         self.assertEqual(stable["version"], "1.2.0")
@@ -87,7 +87,7 @@ class NugetTest(unittest.TestCase):
 
     def test_prerelease_newer_than_stable_is_kept(self):
         index = {"versions": ["1.2.0", "1.3.0-preview2", "1.3.0-preview3"]}
-        with mock.patch.object(fv.requests, "get", return_value=fake_response(index)), \
+        with mock.patch.object(fv.net.SESSION, "get", return_value=fake_response(index)), \
              mock.patch.object(fv, "_get_nuget_date", return_value=None):
             stable, pre = fv.fetch_nuget_versions("Some.Package")
         self.assertEqual(stable["version"], "1.2.0")
@@ -105,10 +105,54 @@ class OutdatedPrereleaseTest(unittest.TestCase):
             {"version": "release-1.0.21", "date": "2022-01-12"}))
 
 
+class GithubTagsTest(unittest.TestCase):
+    def test_highest_version_wins_over_alphabetical_order(self):
+        refs = [{"ref": f"refs/tags/{t}"} for t in ["3.10.0", "3.4.2-bsd", "3.9.1", "4.0.0", "nightly"]]
+        commit = {"commit": {"committer": {"date": "2019-01-07T10:00:00Z"}}}
+        with mock.patch.object(fv.net, "github_json", side_effect=[refs, commit]) as api:
+            stable, pre = fv.fetch_github_tags("NVIDIAGameWorks/PhysX")
+        self.assertEqual(stable, {"version": "4.0.0", "date": "2019-01-07"})
+        self.assertIsNone(pre)
+        self.assertEqual(api.call_args_list[1].args[0], "/repos/NVIDIAGameWorks/PhysX/commits/4.0.0")
+
+    def test_prerelease_tag_kept_only_when_higher(self):
+        refs = [{"ref": f"refs/tags/{t}"} for t in ["v1.0.0", "v1.1.0-rc1", "v0.9.0-beta"]]
+        commit = {"commit": {"committer": {"date": "2026-01-01T00:00:00Z"}}}
+        with mock.patch.object(fv.net, "github_json", side_effect=[refs, commit, commit]):
+            stable, pre = fv.fetch_github_tags("o/r")
+        self.assertEqual(stable["version"], "1.0.0")
+        self.assertEqual(pre["version"], "1.1.0-rc1")
+
+
+def commit(sha, message, date):
+    return {"sha": sha, "commit": {"message": message, "committer": {"date": date}}}
+
+
+class GithubCommitsTest(unittest.TestCase):
+    COMMITS = [
+        commit("f00dbabe1234", "Fix typo", "2026-11-10T05:10:52Z"),
+        commit("c0ffee987654", "R620-Developer SDK", "2026-11-01T00:00:00Z"),
+    ]
+
+    def test_regex_on_commit_message(self):
+        with mock.patch.object(fv.net, "github_json", return_value=self.COMMITS):
+            result = fv.fetch_github_commits({"repo": "NVIDIA/nvapi", "regex": r"^(R\d+)"})
+        self.assertEqual(result, {"version": "R620", "date": "2026-11-01"})
+
+    def test_rolling_version_without_regex(self):
+        with mock.patch.object(fv.net, "github_json", return_value=self.COMMITS):
+            result = fv.fetch_github_commits({"repo": "NVIDIA-RTX/NVRHI"})
+        self.assertEqual(result, {"version": "f00dbab", "date": "2026-11-10", "rolling": True})
+
+    def test_no_match_returns_none(self):
+        with mock.patch.object(fv.net, "github_json", return_value=self.COMMITS):
+            self.assertIsNone(fv.fetch_github_commits({"repo": "o/r", "regex": r"^v(\d+)"}))
+
+
 class FetchEntryErrorsTest(unittest.TestCase):
     def test_failing_sources_are_reported(self):
         entry = {"sources": [{"type": "github", "repo": "a/b"}, {"type": "nuget", "package_id": "P"}]}
-        with mock.patch.object(fv.requests, "get", side_effect=RuntimeError("rate limited")):
+        with mock.patch.object(fv.net.SESSION, "get", side_effect=RuntimeError("rate limited")):
             stable, pre, active, errors = fv.fetch_entry(entry)
         self.assertIsNone(stable)
         self.assertIsNone(active)
@@ -119,7 +163,7 @@ class FetchEntryErrorsTest(unittest.TestCase):
         entry = {"sources": [{"type": "scraping-json", "url": "https://x/a.json", "json_path": "v"},
                              {"type": "scraping-json", "url": "https://x/b.json", "json_path": "v"}]}
         responses = [RuntimeError("boom"), fake_response({"v": "1.2.3"})]
-        with mock.patch.object(fv.requests, "get", side_effect=responses):
+        with mock.patch.object(fv.net.SESSION, "get", side_effect=responses):
             stable, _, active, errors = fv.fetch_entry(entry)
         self.assertEqual(stable["version"], "1.2.3")
         self.assertEqual(active, "scraping-json:https://x/b.json")
@@ -173,6 +217,32 @@ class MainExitCodeTest(unittest.TestCase):
         self.assertEqual(entries["a"]["versions"]["stable"]["version"], "1.1")
         self.assertNotEqual(entries["a"]["last_checked"], "2026-01-01")
         self.assertEqual(entries["b"]["last_checked"], "2026-01-01")
+
+    def test_dll_failure_is_a_warning_not_a_failure(self):
+        with open(self.path, encoding="utf-8") as f:
+            tracker = json.load(f)
+        tracker["entries"][0]["binaries"] = [{"type": "github-file", "repo": "o/r", "path_regex": ".*"}]
+        tracker["entries"][0]["dll_versions"] = {"a.dll": {"version": "1.0.0.0", "key": "k", "source": "github-file:o/r/a.dll"}}
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(tracker, f)
+
+        with mock.patch.object(fv.binaries.net, "github_json", side_effect=RuntimeError("tree failed")):
+            code, entries = self.run_main(lambda package_id: ({"version": "9", "date": None}, None))
+        self.assertEqual(code, 0)
+        self.assertEqual(entries["a"]["dll_versions"]["a.dll"]["version"], "1.0.0.0")
+
+    def test_dll_versions_are_stored(self):
+        with open(self.path, encoding="utf-8") as f:
+            tracker = json.load(f)
+        tracker["entries"][1]["binaries"] = [{"type": "nuget", "package_id": "B", "path_regex": ".*"}]
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(tracker, f)
+
+        found = {"b.dll": {"version": "2.0.1.0", "date": None, "source": "nuget:B/2.0:b.dll", "key": "nuget:b:2.0"}}
+        with mock.patch.object(fv.binaries, "fetch_dll_versions", return_value=(found, [])):
+            code, entries = self.run_main(lambda package_id: ({"version": "2.0", "date": None}, None))
+        self.assertEqual(code, 0)
+        self.assertEqual(entries["b"]["dll_versions"], found)
 
 
 if __name__ == "__main__":
