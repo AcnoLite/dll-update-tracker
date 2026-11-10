@@ -25,6 +25,13 @@
           "package_id": "Microsoft.Direct3D.D3D12"
         }
       ],
+      "binaries": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.Direct3D.D3D12",
+          "path_regex": "build/native/bin/x64/[^/]+\\.dll"
+        }
+      ],
       "versions": {
         "stable": {
           "version": "1.620.1",
@@ -51,6 +58,13 @@
         {
           "type": "nuget",
           "package_id": "Microsoft.Direct3D.DirectStorage"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.Direct3D.DirectStorage",
+          "path_regex": "native/bin/x64/[^/]+\\.dll"
         }
       ],
       "versions": {
@@ -84,6 +98,14 @@
           "type": "nuget",
           "package_id": "Microsoft.Direct3D.DXC",
           "note": "NuGet uses a different version scheme, avoid as fallback"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "github-release-asset",
+          "repo": "microsoft/DirectXShaderCompiler",
+          "asset_regex": "dxc_[\\d_]+\\.zip",
+          "path_regex": "bin/x64/[^/]+\\.dll"
         }
       ],
       "versions": {
@@ -129,6 +151,7 @@
       "role": "CPU+GPU debug/profiling markers",
       "dlls": [
         "WinPixEventRuntime.dll",
+        "WinPixGpuCapturer.dll",
         "WinPixTimingCapturer.dll"
       ],
       "sources": [
@@ -140,6 +163,13 @@
           "type": "github",
           "repo": "microsoft/PixEvents",
           "note": "GitHub = source code, no releases"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "nuget",
+          "package_id": "WinPixEventRuntime",
+          "path_regex": "bin/x64/WinPixEventRuntime\\.dll"
         }
       ],
       "versions": {
@@ -165,6 +195,13 @@
         {
           "type": "github",
           "repo": "GPUOpen-LibrariesAndSDKs/AGS_SDK"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "github-file",
+          "repo": "GPUOpen-LibrariesAndSDKs/AGS_SDK",
+          "path_regex": "ags_lib/lib/amd_ags_x(64|86)\\.dll"
         }
       ],
       "versions": {
@@ -206,13 +243,27 @@
       "name": "AMD FidelityFX (FSR) SDK",
       "role": "Upscaling (FSR), Frame Generation, Ray Regeneration, Radiance Caching",
       "dlls": [
-        "amd_fidelityfx_dx12.dll"
+        "amd_fidelityfx_loader_dx12.dll",
+        "amd_fidelityfx_upscaler_dx12.dll",
+        "amd_fidelityfx_framegeneration_dx12.dll",
+        "amd_fidelityfx_denoiser_dx12.dll",
+        "amd_fidelityfx_radiancecache_dx12.dll",
+        "amd_fidelityfx_loader_vk.dll",
+        "amd_fidelityfx_upscaler_vk.dll",
+        "amd_fidelityfx_framegeneration_vk.dll"
       ],
       "sources": [
         {
           "type": "github",
           "repo": "GPUOpen-LibrariesAndSDKs/FidelityFX-SDK",
           "note": "SDK 2.0+: DLL split by effect"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "github-file",
+          "repo": "GPUOpen-LibrariesAndSDKs/FidelityFX-SDK",
+          "path_regex": "Kits/FidelityFX/signedbin/[^/]+\\.dll"
         }
       ],
       "versions": {
@@ -231,6 +282,7 @@
       "name": "Anti-Lag 2",
       "role": "Input-to-display latency reduction, AMD equivalent of Reflex",
       "dlls": [
+        "amdxc64.dll",
         "amdxx64.dll"
       ],
       "sources": [
@@ -255,12 +307,32 @@
       "vendor": "nvidia",
       "name": "Streamline",
       "role": "Abstraction layer to plug DLSS, Reflex, NIS into render pipeline",
-      "dlls": [],
+      "dlls": [
+        "sl.interposer.dll",
+        "sl.common.dll",
+        "sl.dlss.dll",
+        "sl.dlss_g.dll",
+        "sl.dlss_d.dll",
+        "sl.reflex.dll",
+        "sl.pcl.dll",
+        "sl.nis.dll",
+        "sl.deepdvc.dll",
+        "sl.directsr.dll",
+        "sl.nvperf.dll"
+      ],
       "sources": [
         {
           "type": "github",
           "repo": "NVIDIA-RTX/Streamline",
           "note": "C++ framework, no standalone DLL"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "github-release-asset",
+          "repo": "NVIDIA-RTX/Streamline",
+          "asset_regex": "streamline-sdk-v[\\d.]+\\.zip",
+          "path_regex": "bin/x64/sl\\.[^/]+\\.dll"
         }
       ],
       "versions": {
@@ -282,16 +354,28 @@
         "nvngx_dlss.dll",
         "nvngx_dlssg.dll",
         "nvngx_dlssd.dll",
-        "nvngx.dll",
-        "_nvngx.dll",
         "nvngx_deepdvc.dll",
-        "nvngx_truehdr.dll"
+        "nvngx.dll",
+        "_nvngx.dll"
       ],
       "sources": [
         {
           "type": "github",
           "repo": "NVIDIA/DLSS",
           "note": "nvngx.dll/_nvngx.dll = NGX core loader, nvngx_deepdvc.dll = RTX Dynamic Vibrance, nvngx_truehdr.dll = RTX HDR"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "github-file",
+          "repo": "NVIDIA/DLSS",
+          "path_regex": "lib/Windows_x86_64/rel/nvngx_dlss[dg]?\\.dll"
+        },
+        {
+          "type": "github-release-asset",
+          "repo": "NVIDIA-RTX/Streamline",
+          "asset_regex": "streamline-sdk-v[\\d.]+\\.zip",
+          "path_regex": "bin/x64/nvngx_deepdvc\\.dll"
         }
       ],
       "versions": {
@@ -309,12 +393,24 @@
       "vendor": "nvidia",
       "name": "NVIDIA Reflex",
       "role": "Input-to-display latency reduction (low-latency mode + frame warp)",
-      "dlls": [],
+      "dlls": [
+        "sl.reflex.dll",
+        "sl.pcl.dll",
+        "NvLowLatencyVk.dll"
+      ],
       "sources": [
         {
           "type": "github",
           "repo": "NVIDIA-RTX/Streamline",
           "note": "Integrated via Streamline, no separate repo"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "github-release-asset",
+          "repo": "NVIDIA-RTX/Streamline",
+          "asset_regex": "streamline-sdk-v[\\d.]+\\.zip",
+          "path_regex": "bin/x64/(sl\\.reflex|sl\\.pcl|NvLowLatencyVk)\\.dll"
         }
       ],
       "versions": {
@@ -338,12 +434,11 @@
       ],
       "sources": [
         {
-          "type": "github",
+          "type": "github-commits",
           "repo": "NVIDIA/nvapi",
-          "note": "Repo = headers/libs only, DLL shipped with driver"
+          "regex": "^(R\\d+)"
         }
       ],
-      "manual": true,
       "versions": {
         "stable": null,
         "prerelease": null
@@ -425,7 +520,14 @@
       "vendor": "nvidia",
       "name": "PhysX",
       "role": "Physics engine (rigidbody, soft body, cloth, fluids, destruction)",
-      "dlls": [],
+      "dlls": [
+        "PhysX_64.dll",
+        "PhysXCommon_64.dll",
+        "PhysXFoundation_64.dll",
+        "PhysXCooking_64.dll",
+        "PhysXGpu_64.dll",
+        "PhysXDevice64.dll"
+      ],
       "sources": [
         {
           "type": "github",
@@ -459,6 +561,14 @@
           "type": "github",
           "repo": "intel/xess",
           "note": "Prebuilt Windows binaries, not open source"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "github-release-asset",
+          "repo": "intel/xess",
+          "asset_regex": "XeSS_SDK_[\\d.]+\\.zip",
+          "path_regex": "bin/[^/]+\\.dll"
         }
       ],
       "versions": {
@@ -506,12 +616,10 @@
       "dlls": [],
       "sources": [
         {
-          "type": "github-tags",
-          "repo": "google/swiftshader",
-          "note": "Archived repo, no releases or tags"
+          "type": "github-commits",
+          "repo": "google/swiftshader"
         }
       ],
-      "manual": true,
       "versions": {
         "stable": null,
         "prerelease": null
@@ -525,12 +633,21 @@
       "name": "OpenAL Soft",
       "role": "Open source 3D audio implementation, spatial audio, HRTF",
       "dlls": [
-        "openal32.dll"
+        "soft_oal.dll",
+        "OpenAL32.dll"
       ],
       "sources": [
         {
           "type": "github",
           "repo": "kcat/openal-soft"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "github-release-asset",
+          "repo": "kcat/openal-soft",
+          "asset_regex": "openal-soft-[\\d.]+-bin\\.zip",
+          "path_regex": "[^/]+/(bin|router)/Win64/[^/]+\\.dll"
         }
       ],
       "versions": {
@@ -553,14 +670,30 @@
       "role": "Audio spatialization, ray traced audio, occlusion, reverb",
       "dlls": [
         "phonon.dll",
-        "phonon_fmod_studio.dll",
-        "phonon_unity.dll"
+        "phonon_fmod.dll",
+        "audioplugin_phonon.dll",
+        "GPUUtilities.dll",
+        "TrueAudioNext.dll"
       ],
       "sources": [
         {
           "type": "github",
           "repo": "ValveSoftware/steam-audio",
           "note": "Includes FMOD, Unity, Wwise plugins"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "github-release-asset",
+          "repo": "ValveSoftware/steam-audio",
+          "asset_regex": "steamaudio_[\\d.]+\\.zip",
+          "path_regex": "steamaudio/lib/windows-x64/[^/]+\\.dll"
+        },
+        {
+          "type": "github-release-asset",
+          "repo": "ValveSoftware/steam-audio",
+          "asset_regex": "steamaudio_fmod_[\\d.]+\\.zip",
+          "path_regex": "[^/]+/lib/windows-x64/phonon_fmod\\.dll"
         }
       ],
       "versions": {
@@ -588,6 +721,13 @@
         {
           "type": "nuget",
           "package_id": "Microsoft.XAudio2.Redist"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.XAudio2.Redist",
+          "path_regex": "build/native/release/bin/x64/[^/]+\\.dll"
         }
       ],
       "versions": {
@@ -651,7 +791,9 @@
       "vendor": "nvidia",
       "name": "NRD (Real-time Denoisers)",
       "role": "Real-time denoisers for ray tracing (ReBLUR, ReLAX)",
-      "dlls": [],
+      "dlls": [
+        "NRD.dll"
+      ],
       "sources": [
         {
           "type": "github",
@@ -674,7 +816,9 @@
       "vendor": "nvidia",
       "name": "NRi (NRD Interface)",
       "role": "Render abstraction layer for NRD, supports D3D11/D3D12/Vulkan",
-      "dlls": [],
+      "dlls": [
+        "NRI.dll"
+      ],
       "sources": [
         {
           "type": "github",
@@ -699,12 +843,10 @@
       "dlls": [],
       "sources": [
         {
-          "type": "github",
-          "repo": "NVIDIA-RTX/NVRHI",
-          "note": "No releases, used by NVIDIA samples"
+          "type": "github-commits",
+          "repo": "NVIDIA-RTX/NVRHI"
         }
       ],
-      "manual": true,
       "versions": {
         "stable": null,
         "prerelease": null
@@ -772,6 +914,14 @@
           "repo": "KhronosGroup/OpenXR-SDK"
         }
       ],
+      "binaries": [
+        {
+          "type": "github-release-asset",
+          "repo": "KhronosGroup/OpenXR-SDK",
+          "asset_regex": "OpenXR\\.Loader\\.[\\d.]+\\.nupkg",
+          "path_regex": "native/x64/release/bin/openxr_loader\\.dll"
+        }
+      ],
       "versions": {
         "stable": {
           "version": "release-1.1.65",
@@ -792,12 +942,19 @@
       "role": "GPU debug, render frame capture and analysis",
       "dlls": [
         "renderdoc.dll",
-        "renderdocshim.dll"
+        "renderdocshim64.dll"
       ],
       "sources": [
         {
           "type": "github",
           "repo": "baldurk/renderdoc"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "url-archive",
+          "url": "https://renderdoc.org/stable/{version}/RenderDoc_{version}_64.zip",
+          "path_regex": "RenderDoc_[^/]+/renderdoc(shim64)?\\.dll"
         }
       ],
       "versions": {
@@ -817,16 +974,23 @@
       "role": "Microsoft C++ runtime, required by most Windows applications",
       "dlls": [
         "vcruntime140.dll",
+        "vcruntime140_1.dll",
+        "vcruntime140_threads.dll",
         "msvcp140.dll",
-        "vcruntime140_1.dll"
+        "msvcp140_1.dll",
+        "msvcp140_2.dll",
+        "msvcp140_atomic_wait.dll",
+        "msvcp140_codecvt_ids.dll",
+        "concrt140.dll",
+        "vccorlib140.dll",
+        "vcomp140.dll",
+        "vcamp140.dll"
       ],
       "sources": [
         {
-          "type": "scraping-html",
-          "url": "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
-          "selector": "table tbody tr:first-child td:first-child a",
-          "regex": "([0-9]+\\.[0-9]+\\.[0-9]+)",
-          "label": "Microsoft Learn"
+          "type": "pe-version",
+          "url": "https://aka.ms/vs/17/release/vc_redist.x64.exe",
+          "label": "Microsoft"
         }
       ],
       "versions": {
@@ -895,7 +1059,11 @@
       "name": "PhysX Legacy (v4)",
       "role": "v4 physics engine, distributed as standalone DLL",
       "dlls": [
-        "PhysX_9.13.12611_win64.dll",
+        "PhysX_64.dll",
+        "PhysXCommon_64.dll",
+        "PhysXFoundation_64.dll",
+        "PhysXCooking_64.dll",
+        "PhysXGpu_64.dll",
         "PhysXDevice64.dll"
       ],
       "sources": [
@@ -905,7 +1073,218 @@
           "note": "Legacy, replaced by PhysX 5, archived repo"
         }
       ],
-      "manual": true,
+      "binaries": [
+        {
+          "type": "github-file",
+          "repo": "NVIDIAGameWorks/PhysX",
+          "path_regex": "physx/bin/win\\.x86_64\\.vc140\\.mt/release/PhysX(Gpu_64|Device64)\\.dll"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "directml",
+      "vendor": "microsoft",
+      "name": "DirectML",
+      "role": "Hardware-accelerated machine learning on DirectX 12 (used by ML upscalers and frame generation)",
+      "dlls": [
+        "DirectML.dll"
+      ],
+      "sources": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.AI.DirectML"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.AI.DirectML",
+          "path_regex": "bin/x64-win/DirectML\\.dll"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "d3d-warp",
+      "vendor": "microsoft",
+      "name": "Direct3D WARP",
+      "role": "Software rasterizer for Direct3D 10/11/12, redistributable app-local",
+      "dlls": [
+        "d3d10warp.dll"
+      ],
+      "sources": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.Direct3D.WARP"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.Direct3D.WARP",
+          "path_regex": "build/native/bin/x64/d3d10warp\\.dll"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "gameinput",
+      "vendor": "microsoft",
+      "name": "GameInput",
+      "role": "Input API for gamepads, keyboards, mice and racing wheels (successor of XInput)",
+      "dlls": [
+        "GameInputRedist.dll",
+        "GameInput.dll"
+      ],
+      "sources": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.GameInput"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.GameInput",
+          "path_regex": "native/bin/x64/GameInputRedist\\.dll"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "dxvk",
+      "vendor": "vulkan",
+      "name": "DXVK",
+      "role": "Direct3D 8/9/10/11 to Vulkan translation layer (Proton, modding). Its DLLs report Windows' version, not DXVK's",
+      "dlls": [
+        "d3d8.dll",
+        "d3d9.dll",
+        "d3d10core.dll",
+        "d3d11.dll",
+        "dxgi.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "doitsujin/dxvk"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "vkd3d-proton",
+      "vendor": "vulkan",
+      "name": "vkd3d-proton",
+      "role": "Direct3D 12 to Vulkan translation layer (Proton, modding)",
+      "dlls": [
+        "d3d12.dll",
+        "d3d12core.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "HansKristian-Work/vkd3d-proton"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "openvr",
+      "vendor": "other",
+      "name": "OpenVR",
+      "role": "Valve VR runtime API (SteamVR). The DLL's version resource is not maintained",
+      "dlls": [
+        "openvr_api.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "ValveSoftware/openvr"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "sdl3",
+      "vendor": "other",
+      "name": "SDL3",
+      "role": "Cross-platform windowing, input, audio and GPU abstraction",
+      "dlls": [
+        "SDL3.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "libsdl-org/SDL"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "github-release-asset",
+          "repo": "libsdl-org/SDL",
+          "asset_regex": "SDL3-[\\d.]+-win32-x64\\.zip",
+          "path_regex": "SDL3\\.dll"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "optiscaler",
+      "vendor": "other",
+      "name": "OptiScaler",
+      "role": "Swaps DLSS/FSR/XeSS between each other in games; ships fakenvapi and the DLSS-G to FSR3 bridge",
+      "dlls": [
+        "OptiScaler.dll",
+        "fakenvapi.dll",
+        "dlssg_to_fsr3_amd_is_better.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "optiscaler/OptiScaler"
+        }
+      ],
       "versions": {
         "stable": null,
         "prerelease": null

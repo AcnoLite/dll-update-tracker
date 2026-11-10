@@ -4,76 +4,76 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DLL Update Tracker</title>
-  <meta name="description" content="Automatic version tracking of graphics, audio and development SDKs">
+  <meta name="description" content="Latest versions of the graphics, audio and tooling SDKs that ship DLLs, checked every week">
   <script>
     (function () {
       var theme = null;
       try { theme = localStorage.getItem('theme'); } catch (e) { /* private mode */ }
       if (theme !== 'light' && theme !== 'dark') {
-        theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
       document.documentElement.dataset.theme = theme;
     })();
   </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="aurora" aria-hidden="true">
-    <div class="aurora-blob blob-1"></div>
-    <div class="aurora-blob blob-2"></div>
-    <div class="aurora-blob blob-3"></div>
-  </div>
+  <div class="page">
+    <header class="masthead">
+      <div class="masthead-text">
+        <h1>DLL Update Tracker</h1>
+        <p id="status-line" class="status-line" role="status" aria-live="polite">Loading the register…</p>
+      </div>
+      <button id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+    </header>
 
-  <header>
-    <h1>DLL Update Tracker</h1>
-    <p class="subtitle">Automatic version tracking of graphics, audio and development SDKs</p>
-    <button id="theme-toggle" type="button" aria-label="Switch theme" aria-pressed="false">
-      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="4"></circle>
-        <line x1="12" y1="1" x2="12" y2="4"></line>
-        <line x1="12" y1="20" x2="12" y2="23"></line>
-        <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"></line>
-        <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"></line>
-        <line x1="1" y1="12" x2="4" y2="12"></line>
-        <line x1="20" y1="12" x2="23" y2="12"></line>
-        <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"></line>
-        <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"></line>
-      </svg>
-      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-      </svg>
-    </button>
-  </header>
+    <section class="recent" aria-labelledby="recent-title">
+      <div class="recent-head">
+        <h2 id="recent-title">Recent releases</h2>
+        <p class="legend"><mark class="fresh">Highlighted</mark> versions came out in the last 7 days.</p>
+      </div>
+      <ol id="recent-list" class="recent-list"></ol>
+    </section>
 
-  <section id="stats-bar" role="status" aria-live="polite"></section>
-
-  <div id="controls-sticky">
-    <section id="controls">
-      <div class="search-row">
+    <div id="controls-sticky">
+      <section id="controls" aria-label="Filter the register">
         <div class="search-wrapper">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="20" y1="20" x2="16" y2="16"></line>
           </svg>
-          <input type="text" id="search-input" placeholder="Search SDK (name, role, DLL...)" autocomplete="off">
-          <kbd class="search-kbd">/</kbd>
+          <label class="visually-hidden" for="search-input">Search SDKs</label>
+          <input type="search" id="search-input" placeholder="Search by SDK, role or DLL name" autocomplete="off">
+          <kbd class="search-kbd" aria-hidden="true">/</kbd>
         </div>
-        <button id="reset-filters" type="button" hidden>Reset</button>
-      </div>
-      <div id="vendor-filters"></div>
-    </section>
+        <div id="vendor-filters" role="group" aria-label="Vendors"></div>
+        <p id="result-count" class="result-count" role="status" aria-live="polite"></p>
+        <button id="reset-filters" type="button" hidden>Clear filters</button>
+      </section>
+    </div>
+
+    <main id="dashboard" aria-label="SDK register"></main>
+
+    <footer>
+      <p>
+        Versions are checked every Monday by
+        <a href="https://github.com/AcnoLite/dll-update-tracker/actions">GitHub Actions</a>.
+        Entries marked <span class="manual-mark">manual</span> are updated by hand.
+        <a href="https://github.com/AcnoLite/dll-update-tracker">Source on GitHub</a>
+      </p>
+    </footer>
   </div>
-
-  <main id="dashboard" aria-label="SDK list"></main>
-
-  <footer>
-    <p>
-      Automatically updated every week via
-      <a href="https://github.com/AcnoLite/dll-update-tracker/actions">GitHub Actions</a>
-      &middot;
-      <a href="https://github.com/AcnoLite/dll-update-tracker">GitHub</a>
-    </p>
-  </footer>
 
   <script src="app.js"></script>
 </body>

@@ -4,13 +4,13 @@
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 TRACKER_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "tracker.json")
 README_PATH = os.path.join(os.path.dirname(__file__), "..", "README.md")
 
-VENDOR_ORDER = ["microsoft", "amd", "nvidia", "intel", "vulkan", "audio", "other"]
-VENDOR_LABELS = {
+VENDOR_ORDER = ("microsoft", "amd", "nvidia", "intel", "vulkan", "audio", "other")
+VENDOR_LABELS = frozendict({
     "microsoft": ("Microsoft", "\U0001f7e6"),
     "amd": ("AMD", "\U0001f7e5"),
     "nvidia": ("NVIDIA", "\U0001f7e2"),
@@ -18,7 +18,7 @@ VENDOR_LABELS = {
     "vulkan": ("Vulkan", "\U0001f7e8"),
     "audio": ("Audio", "\U0001f50a"),
     "other": ("Other", "\U0001f4e6"),
-}
+})
 
 
 def fmt_version(v):
@@ -30,12 +30,23 @@ def fmt_version(v):
     return ver, date
 
 
+def dll_list(entry):
+    """Declared DLLs, then any extra DLL found in the binaries, each with its
+    file version when known: [(name, version_or_None)]."""
+    known = entry.get("dll_versions") or {}
+    by_lower = {name.lower(): rec.get("version") for name, rec in known.items()}
+    items = [(name, by_lower.get(name.lower())) for name in entry.get("dlls", [])]
+    declared = {name.lower() for name in entry.get("dlls", [])}
+    items += [(name, rec.get("version")) for name, rec in known.items() if name.lower() not in declared]
+    return items
+
+
 def source_links(entry):
     """Build source display string from sources array."""
     parts = []
     for src in entry.get("sources", []):
         t = src.get("type", "")
-        if t in ("github", "github-tags"):
+        if t in ("github", "github-tags", "github-commits"):
             repo = src.get("repo", "")
             parts.append(f"[{repo}](https://github.com/{repo})")
         elif t == "nuget":
@@ -43,7 +54,7 @@ def source_links(entry):
             parts.append(f"[NuGet](https://www.nuget.org/packages/{pkg}/)")
         elif t == "vulkan-sdk":
             parts.append(f"[Lunarg](https://vulkan.lunarg.com/sdk/home)")
-        elif t == "scraping":
+        elif t in ("scraping", "scraping-html", "scraping-json", "pe-version"):
             url = src.get("url", "#")
             label = src.get("label", "Website")
             parts.append(f"[{label}]({url})")
@@ -61,9 +72,9 @@ def build_rows(entries):
         s_ver, s_date = fmt_version(stable)
         p_ver, p_date = fmt_version(pre)
 
-        dlls = e.get("dlls", [])
+        dlls = dll_list(e)
         if dlls:
-            dlls_str = ", ".join(f"`{d}`" for d in dlls)
+            dlls_str = "<br>".join(f"`{name}` {version}" if version else f"`{name}`" for name, version in dlls)
         else:
             dlls_str = "\u26a0\ufe0f None"
 
@@ -71,7 +82,9 @@ def build_rows(entries):
         checked = e.get("last_checked") or "-"
 
         # Version display with dates
-        if stable and s_date != "?":
+        if stable and stable.get("rolling"):
+            s_display = f"`{s_ver}` (latest commit, {s_date})"
+        elif stable and s_date != "?":
             s_display = f"`{s_ver}` ({s_date})"
         elif stable:
             s_display = f"`{s_ver}`"
@@ -119,7 +132,7 @@ def main():
     with open(tracker_path, "r", encoding="utf-8") as f:
         tracker = json.load(f)
 
-    today = datetime.now(timezone.utc).strftime("%d/%m/%Y")
+    today = datetime.now(UTC).strftime("%d/%m/%Y")
     entries = tracker.get("entries", [])
 
     # Group by vendor
@@ -132,14 +145,16 @@ def main():
     with_stable = sum(1 for e in entries if e.get("versions", {}).get("stable"))
     with_pre = sum(1 for e in entries if e.get("versions", {}).get("prerelease"))
     auto = sum(1 for e in entries if e.get("active_source"))
+    dll_versions = sum(len(e.get("dll_versions") or {}) for e in entries)
 
     lines = []
     lines.append("# DLL Update Tracker\n")
     lines.append(f"> Last updated: **{today}**")
-    lines.append(f"> **{total}** SDKs/technologies tracked | **{with_stable}** stable | **{with_pre}** pre-release | **{auto}** auto-tracked")
+    lines.append(f"> **{total}** SDKs/technologies tracked | **{with_stable}** stable | **{with_pre}** pre-release | **{auto}** auto-tracked | **{dll_versions}** DLL file versions")
     lines.append(">")
     lines.append("> Automatic tracking of graphics, audio and tools DLLs (upscaling, frame gen, low latency, ray tracing, physics, debug, audio middleware).")
-    lines.append("> Versions are fetched via GitHub APIs, NuGet and web scraping.")
+    lines.append("> SDK versions are fetched via GitHub APIs, NuGet and web scraping.")
+    lines.append("> DLL file versions are read from the DLLs themselves (repository files, release archives, NuGet packages).")
     lines.append("")
     lines.append("---\n")
 
