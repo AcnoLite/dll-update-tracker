@@ -178,6 +178,16 @@ def pe_file_version(f):
     raise BinaryError("no version resource")
 
 
+def _version_or_skip(f, label):
+    """Version of one DLL, or "" when it has none (some vendor DLLs ship
+    without a version resource). One such DLL must not hide its siblings."""
+    try:
+        return pe_file_version(f)
+    except BinaryError as e:
+        print(f"    [dll] {label}: skipped ({e})", file=sys.stderr)
+        return ""
+
+
 # ─── Locators ────────────────────────────────────────────────────
 
 def _matcher(locator):
@@ -205,7 +215,7 @@ def _github_file_version(repo, path):
     if head.startswith(LFS_POINTER_PREFIX):
         # Stored with Git LFS: the real file is served from media.githubusercontent.com.
         raw, f = open_remote(f"https://media.githubusercontent.com/media/{repo}/HEAD/{path}")
-    return pe_file_version(f), raw.bytes_fetched
+    return _version_or_skip(f, path), raw.bytes_fetched
 
 
 def fetch_github_files(locator, previous):
@@ -230,6 +240,8 @@ def fetch_github_files(locator, previous):
             found[name] = cached
             continue
         version, fetched = _github_file_version(repo, item["path"])
+        if not version:
+            continue
         print(f"    [dll] {name} = {version} ({fetched // 1024} KB read)", file=sys.stderr)
         found[name] = _record(version, source, key, _github_file_date(repo, item["path"]))
     return found
@@ -269,9 +281,10 @@ def _versions_from_zip(open_archive, match, source_prefix, key, date):
                 # ZipExtFile is seekable: moving forward decompresses without
                 # keeping the whole member in memory.
                 with archive.open(filename) as member:
-                    version = pe_file_version(member)
+                    version = _version_or_skip(member, path)
                 _RUN_CACHE[(key, filename)] = version
-            found[name] = _record(version, f"{source_prefix}:{path}", key, date)
+            if version:
+                found[name] = _record(version, f"{source_prefix}:{path}", key, date)
     finally:
         if archive is not None:
             archive.close()

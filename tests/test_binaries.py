@@ -121,6 +121,17 @@ class ZipTest(unittest.TestCase):
         self.assertEqual(found["dxcompiler.dll"]["version"], "1.9.2609.0")
         self.assertEqual(found["dxcompiler.dll"]["source"], "src:bin/x64/dxcompiler.dll")
 
+    def test_dll_without_version_does_not_hide_its_siblings(self):
+        # Reflex case: NvLowLatencyVk.dll ships without a version resource.
+        unversioned = bytearray(make_pe())
+        sig = unversioned.find(b"\xbd\x04\xef\xfe")
+        unversioned[sig:sig + 4] = b"\0\0\0\0"
+        archive = make_zip({"bin/x64/NvLowLatencyVk.dll": bytes(unversioned),
+                            "bin/x64/sl.reflex.dll": make_pe((2, 14, 16, 0))})
+        found = binaries._versions_from_zip(lambda: io.BytesIO(archive), re.compile(r"bin/x64/.*\.dll"),
+                                            "src", "k4", None)
+        self.assertEqual(list(found), ["sl.reflex.dll"])
+
     def test_same_archive_is_opened_once_per_run(self):
         archive = make_zip({"bin/x64/sl.reflex.dll": make_pe((2, 14, 16, 0))})
         opens = []
