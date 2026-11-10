@@ -12,8 +12,10 @@ A tracker of the latest versions of graphics/audio/tooling SDKs that ship DLLs (
 
 ## Commands
 
+Python **3.15+** is required (pinned in `.python-version`, used by both workflows): the scripts use `lazy import` (PEP 810), `frozendict` (PEP 814), `re.prefixmatch`, `except A, B:` (PEP 758) and `match` statements, so older interpreters fail with `SyntaxError`.
+
 ```bash
-python -m venv .venv && source .venv/bin/activate
+python3.15 -m venv .venv && source .venv/bin/activate
 pip install -r scripts/requirements.txt   # requests, scrapling[all]
 
 python scripts/fetch_versions.py && python scripts/generate_readme.py

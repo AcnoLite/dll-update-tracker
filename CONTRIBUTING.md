@@ -9,7 +9,7 @@ scripts/
   binaries.py           # Reads DLL file versions from the published binaries
   net.py                # Shared HTTP session (retries on 429/5xx)
   generate_readme.py    # Generates README.md from tracker.json
-  requirements.txt      # Python dependencies
+  requirements.txt      # Python dependencies (Python 3.15+, see .python-version)
 tests/                  # Unit tests (python -m unittest discover -s tests)
 .github/workflows/
   update_tracker.yml    # CI: weekly cron + workflow_dispatch
@@ -96,7 +96,7 @@ python -c "import sys; sys.path.insert(0, 'scripts'); import binaries, zipfile; 
 ## Running locally
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
+python3.15 -m venv .venv && source .venv/bin/activate   # Python 3.15+ required
 pip install -r scripts/requirements.txt
 
 python scripts/fetch_versions.py

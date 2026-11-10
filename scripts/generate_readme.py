@@ -4,13 +4,13 @@
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 TRACKER_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "tracker.json")
 README_PATH = os.path.join(os.path.dirname(__file__), "..", "README.md")
 
-VENDOR_ORDER = ["microsoft", "amd", "nvidia", "intel", "vulkan", "audio", "other"]
-VENDOR_LABELS = {
+VENDOR_ORDER = ("microsoft", "amd", "nvidia", "intel", "vulkan", "audio", "other")
+VENDOR_LABELS = frozendict({
     "microsoft": ("Microsoft", "\U0001f7e6"),
     "amd": ("AMD", "\U0001f7e5"),
     "nvidia": ("NVIDIA", "\U0001f7e2"),
@@ -18,7 +18,7 @@ VENDOR_LABELS = {
     "vulkan": ("Vulkan", "\U0001f7e8"),
     "audio": ("Audio", "\U0001f50a"),
     "other": ("Other", "\U0001f4e6"),
-}
+})
 
 
 def fmt_version(v):
@@ -132,7 +132,7 @@ def main():
     with open(tracker_path, "r", encoding="utf-8") as f:
         tracker = json.load(f)
 
-    today = datetime.now(timezone.utc).strftime("%d/%m/%Y")
+    today = datetime.now(UTC).strftime("%d/%m/%Y")
     entries = tracker.get("entries", [])
 
     # Group by vendor

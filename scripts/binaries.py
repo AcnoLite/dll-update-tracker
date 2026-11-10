@@ -60,7 +60,7 @@ class RemoteFile(io.RawIOBase):
             resp.raise_for_status()
             raise BinaryError(f"{url} does not support range requests (HTTP {resp.status_code})")
         content_range = resp.headers.get("Content-Range", "")
-        match = re.match(r"bytes \d+-\d+/(\d+)", content_range)
+        match = re.prefixmatch(r"bytes \d+-\d+/(\d+)", content_range)
         if not match:
             raise BinaryError(f"{url}: unexpected Content-Range {content_range!r}")
         self.size = int(match.group(1))
@@ -77,14 +77,15 @@ class RemoteFile(io.RawIOBase):
         return self.pos
 
     def seek(self, offset, whence=io.SEEK_SET):
-        if whence == io.SEEK_SET:
-            self.pos = offset
-        elif whence == io.SEEK_CUR:
-            self.pos += offset
-        elif whence == io.SEEK_END:
-            self.pos = self.size + offset
-        else:
-            raise ValueError(f"invalid whence {whence}")
+        match whence:
+            case io.SEEK_SET:
+                self.pos = offset
+            case io.SEEK_CUR:
+                self.pos += offset
+            case io.SEEK_END:
+                self.pos = self.size + offset
+            case _:
+                raise ValueError(f"invalid whence {whence}")
         if self.pos < 0:
             raise ValueError("negative seek position")
         return self.pos
@@ -111,7 +112,7 @@ def _http_date(value):
         return None
     try:
         return email.utils.parsedate_to_datetime(value).strftime("%Y-%m-%d")
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None
 
 
@@ -369,11 +370,11 @@ def fetch_nuget_package(locator, previous):
     return found
 
 
-LOCATORS = {
+LOCATORS = frozendict({
     "github-file": fetch_github_files,
     "github-release-asset": fetch_release_asset,
     "nuget": fetch_nuget_package,
-}
+})
 
 
 def fetch_dll_versions(locators, previous=None):

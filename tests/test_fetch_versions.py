@@ -149,6 +149,20 @@ class GithubCommitsTest(unittest.TestCase):
             self.assertIsNone(fv.fetch_github_commits({"repo": "o/r", "regex": r"^v(\d+)"}))
 
 
+class SourceDispatchTest(unittest.TestCase):
+    def test_incomplete_or_unknown_source_is_reported(self):
+        entry = {"sources": [{"type": "github"}, {"type": "ftp", "url": "ftp://x"}]}
+        stable, _, active, errors = fv.fetch_entry(entry)
+        self.assertIsNone(stable)
+        self.assertIsNone(active)
+        self.assertEqual(len(errors), 2)
+        self.assertIn("unknown or incomplete source", errors[0])
+
+    def test_scrapling_is_not_imported_until_an_html_source_runs(self):
+        # PEP 810 lazy import: importing the fetcher must not load the browser stack.
+        self.assertNotIn("scrapling", sys.modules)
+
+
 class FetchEntryErrorsTest(unittest.TestCase):
     def test_failing_sources_are_reported(self):
         entry = {"sources": [{"type": "github", "repo": "a/b"}, {"type": "nuget", "package_id": "P"}]}

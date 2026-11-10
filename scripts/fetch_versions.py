@@ -1,15 +1,23 @@
 #!/usr/bin/env python3
 """Fetch versions from GitHub (releases, tags, commits), NuGet, JSON endpoints
-and web pages, plus the file version of each DLL (see binaries.py)."""
+and web pages, plus the file version of each DLL (see binaries.py).
+
+Requires Python 3.15+ (explicit lazy imports, PEP 810).
+"""
 
 import json
 import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import binaries
 import net
+
+# scrapling pulls in a browser stack and is only needed by scraping-html
+# sources. Lazy (PEP 810): nothing is imported until such a source runs, and a
+# missing install raises ImportError there, which fetch_entry records.
+lazy from scrapling.fetchers import Fetcher
 
 TRACKER_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "tracker.json")
 NUGET_API = "https://api.nuget.org/v3-flatcontainer"
@@ -21,7 +29,7 @@ def iso_day(timestamp):
     """"2026-10-16T12:00:00Z" -> "2026-10-16"; None stays None."""
     if not timestamp:
         return None
-    return datetime.fromisoformat(timestamp.replace("Z", "+00:00")).strftime("%Y-%m-%d")
+    return datetime.fromisoformat(timestamp).strftime("%Y-%m-%d")
 
 
 def parse_version(tag):
@@ -224,9 +232,6 @@ def fetch_scraping_json(source):
 
 def fetch_scraping_html(source):
     """Fetch version from an HTML page using CSS selector + regex."""
-    # A missing scrapling raises ImportError, which fetch_entry records as a failure.
-    from scrapling.fetchers import Fetcher
-
     url = source.get("url", "")
     selector = source.get("selector", "")
     regex = source.get("regex", "")
@@ -267,6 +272,35 @@ def fetch_scraping_html(source):
 
 # ─── Main fetcher ─────────────────────────────────────────────────
 
+def fetch_source(source):
+    """Query one source. Returns (stable, prerelease, active_source).
+
+    Mapping patterns also check the keys each source type requires: a source
+    missing "repo" or "url" falls through to the error case.
+    """
+    match source:
+        case {"type": "github", "repo": repo}:
+            stable, prerelease = fetch_github_releases(repo)
+            if stable or prerelease:
+                return stable, prerelease, f"github:{repo}"
+            # No release at all: fall back to tags.
+            return (*fetch_github_tags(repo), f"github-tags:{repo}")
+        case {"type": "github-tags", "repo": repo}:
+            return (*fetch_github_tags(repo), f"github-tags:{repo}")
+        case {"type": "nuget", "package_id": package_id}:
+            return (*fetch_nuget_versions(package_id), f"nuget:{package_id}")
+        case {"type": "github-commits", "repo": repo}:
+            return fetch_github_commits(source), None, f"github-commits:{repo}"
+        case {"type": "pe-version", "url": url}:
+            return binaries.remote_pe_version(url), None, f"pe-version:{url}"
+        case {"type": "scraping-json", "url": url}:
+            return fetch_scraping_json(source), None, f"scraping-json:{url}"
+        case {"type": ("scraping-html" | "scraping") as kind, "url": url}:
+            return fetch_scraping_html(source), None, f"{kind}:{url}"
+        case _:
+            raise ValueError(f"unknown or incomplete source: {source!r}")
+
+
 def fetch_entry(entry):
     """Fetch versions for an entry based on its sources.
 
@@ -277,56 +311,14 @@ def fetch_entry(entry):
     errors = []
     for source in entry.get("sources", []):
         src_type = source.get("type")
-
         try:
-            if src_type == "github":
-                stable, prerelease = fetch_github_releases(source["repo"])
-                if stable or prerelease:
-                    return stable, prerelease, f"github:{source['repo']}", errors
-                # Fallback to tags
-                stable, prerelease = fetch_github_tags(source["repo"])
-                if stable or prerelease:
-                    return stable, prerelease, f"github-tags:{source['repo']}", errors
-
-            elif src_type == "github-tags":
-                stable, prerelease = fetch_github_tags(source["repo"])
-                if stable or prerelease:
-                    return stable, prerelease, f"github-tags:{source['repo']}", errors
-
-            elif src_type == "nuget":
-                stable, prerelease = fetch_nuget_versions(source["package_id"])
-                if stable or prerelease:
-                    return stable, prerelease, f"nuget:{source['package_id']}", errors
-
-            elif src_type == "github-commits":
-                result = fetch_github_commits(source)
-                if result:
-                    return result, None, f"github-commits:{source['repo']}", errors
-
-            elif src_type == "pe-version":
-                result = binaries.remote_pe_version(source["url"])
-                if result:
-                    return result, None, f"pe-version:{source['url']}", errors
-
-            elif src_type == "scraping-json":
-                result = fetch_scraping_json(source)
-                if result:
-                    return result, None, f"scraping-json:{source.get('url', '')}", errors
-
-            elif src_type == "scraping-html":
-                result = fetch_scraping_html(source)
-                if result:
-                    return result, None, f"scraping-html:{source.get('url', '')}", errors
-
-            elif src_type == "scraping":
-                result = fetch_scraping_html(source)
-                if result:
-                    return result, None, f"scraping:{source.get('url', '')}", errors
-
+            stable, prerelease, active = fetch_source(source)
         except Exception as e:
             print(f"    [!] {src_type} failed: {e}", file=sys.stderr)
             errors.append(f"{src_type}: {e}")
             continue
+        if stable or prerelease:
+            return stable, prerelease, active, errors
 
     return None, None, None, errors
 
@@ -357,7 +349,7 @@ def main():
     with open(tracker_path, "r", encoding="utf-8") as f:
         tracker = json.load(f)
 
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(UTC).strftime("%Y-%m-%d")
     updated = 0
     skipped = 0
     attempted = 0

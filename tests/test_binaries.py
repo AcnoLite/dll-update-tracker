@@ -72,7 +72,7 @@ class FakeRangeServer:
 
     def get(self, url, headers=None, **kwargs):
         self.requests += 1
-        start, end = map(int, re.match(r"bytes=(\d+)-(\d+)", headers["Range"]).groups())
+        start, end = map(int, re.prefixmatch(r"bytes=(\d+)-(\d+)", headers["Range"]).groups())
         resp = mock.Mock()
         resp.status_code = 206
         resp.url = url
