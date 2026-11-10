@@ -143,7 +143,8 @@ function collectReleases() {
     for (const channel of ['stable', 'prerelease']) {
       const v = e.versions?.[channel];
       const date = parseDate(v?.date);
-      if (!v?.version || !date) continue;
+      // Rolling versions are commits, not releases: they would flood the feed.
+      if (!v?.version || !date || v.rolling) continue;
       releases.push({ entry: e, channel, version: v.version, date, days: daysSince(date) });
     }
   }
@@ -220,7 +221,7 @@ function renderDashboard() {
   const filtered = allEntries.filter(e => {
     if (!activeVendors.includes(e.vendor)) return false;
     if (!query) return true;
-    const haystack = [e.name, e.role, ...(e.dlls || [])].join(' ').toLowerCase();
+    const haystack = [e.name, e.role, ...dllItems(e).map(d => d.name)].join(' ').toLowerCase();
     return haystack.includes(query);
   });
 
@@ -274,7 +275,7 @@ function renderVersionCell(v, label, emptyText) {
   const date = parseDate(v.date);
   const days = date ? daysSince(date) : null;
   const when = date
-    ? `<span class="version-when"><time datetime="${escapeHtml(v.date)}">${fmtDate(v.date)}</time>, ${fmtAge(days)}</span>`
+    ? `<span class="version-when">${v.rolling ? 'Latest commit, ' : ''}<time datetime="${escapeHtml(v.date)}">${fmtDate(v.date)}</time>, ${fmtAge(days)}</span>`
     : `<span class="version-when">Release date unknown</span>`;
   return `
     <td class="version-cell ${days === null ? 'age-unknown' : ageClass(days)}" data-label="${label}">
@@ -285,7 +286,7 @@ function renderVersionCell(v, label, emptyText) {
 
 function renderSources(entry) {
   const links = (entry.sources || []).map(s => {
-    if ((s.type === 'github' || s.type === 'github-tags') && s.repo) {
+    if (['github', 'github-tags', 'github-commits'].includes(s.type) && s.repo) {
       return `<a href="https://github.com/${escapeHtml(s.repo)}">GitHub</a>`;
     }
     if (s.type === 'nuget' && s.package_id) {
@@ -299,9 +300,33 @@ function renderSources(entry) {
   return links.length ? links.join('<br>') : '<span class="muted">None</span>';
 }
 
+/* Declared DLLs first, then any extra DLL found in the binaries, each with its
+   file version record when the fetcher could read it. */
+function dllItems(entry) {
+  const known = entry.dll_versions || {};
+  const byLower = new Map(Object.entries(known).map(([name, rec]) => [name.toLowerCase(), rec]));
+  const declared = entry.dlls || [];
+  const declaredLower = new Set(declared.map(d => d.toLowerCase()));
+  return [
+    ...declared.map(name => ({ name, record: byLower.get(name.toLowerCase()) })),
+    ...Object.entries(known)
+      .filter(([name]) => !declaredLower.has(name.toLowerCase()))
+      .map(([name, record]) => ({ name, record })),
+  ];
+}
+
+function renderDll({ name, record }) {
+  if (!record?.version) {
+    return `<span class="dll"><span class="dll-name">${escapeHtml(name)}</span></span>`;
+  }
+  const date = parseDate(record.date);
+  const days = date ? daysSince(date) : null;
+  return `<span class="dll"><span class="dll-name">${escapeHtml(name)}</span><span class="dll-version">${versionHtml(record.version, days)}</span></span>`;
+}
+
 function renderRow(entry) {
   const versions = entry.versions || {};
-  const dlls = entry.dlls || [];
+  const dlls = dllItems(entry);
   const stableEmpty = entry.manual ? 'Updated by hand' : 'Not found';
 
   return `
@@ -314,7 +339,7 @@ function renderRow(entry) {
       ${renderVersionCell(versions.stable, 'Stable', stableEmpty)}
       ${renderVersionCell(versions.prerelease, 'Pre-release', '<span class="muted">None</span>')}
       <td class="dll-cell" data-label="DLLs">${dlls.length
-        ? dlls.map(d => `<span class="dll">${escapeHtml(d)}</span>`).join('')
+        ? dlls.map(renderDll).join('')
         : '<span class="muted">No DLL</span>'}</td>
       <td class="source-cell" data-label="Source">${renderSources(entry)}</td>
     </tr>`;

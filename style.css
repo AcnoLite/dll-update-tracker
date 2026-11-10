@@ -421,11 +421,11 @@ h2 {
   padding-bottom: 0.5rem;
 }
 
-.register thead th:nth-child(1) { width: 30%; }
-.register thead th:nth-child(2) { width: 20%; }
-.register thead th:nth-child(3) { width: 20%; }
-.register thead th:nth-child(4) { width: 19%; }
-.register thead th:nth-child(5) { width: 11%; }
+.register thead th:nth-child(1) { width: 26%; }
+.register thead th:nth-child(2) { width: 17%; }
+.register thead th:nth-child(3) { width: 16%; }
+.register thead th:nth-child(4) { width: 31%; }
+.register thead th:nth-child(5) { width: 10%; }
 
 .register tbody tr:target { background: var(--paper-raised); }
 
@@ -476,9 +476,24 @@ h2 {
 .dll-cell { font-size: var(--step--1); }
 
 .dll {
-  display: block;
-  overflow-wrap: anywhere;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: 0.75rem;
+  padding: 0.1rem 0;
   color: var(--ink-soft);
+}
+
+.dll + .dll { border-top: 1px dotted var(--rule); }
+
+.dll-name { overflow-wrap: anywhere; min-width: 0; }
+
+/* File version read from the DLL itself: right-aligned so versions line up. */
+.dll-version {
+  margin-left: auto;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
 }
 
 .source-cell { font-size: var(--step--1); }
