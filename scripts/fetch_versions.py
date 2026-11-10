@@ -336,7 +336,8 @@ def update_dll_versions(entry):
     locators = entry.get("binaries") or []
     if not locators:
         return []
-    found, dll_errors = binaries.fetch_dll_versions(locators, entry.get("dll_versions"))
+    stable = (entry.get("versions") or {}).get("stable") or {}
+    found, dll_errors = binaries.fetch_dll_versions(locators, entry.get("dll_versions"), stable.get("version"))
     if found:
         entry["dll_versions"] = found
         listed = ", ".join(f"{name}={rec['version']}" for name, rec in found.items())

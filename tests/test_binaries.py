@@ -200,6 +200,24 @@ class FetchDllVersionsTest(unittest.TestCase):
         self.assertEqual(found, {})
         self.assertEqual(len(errors), 1)
 
+    def test_url_archive_substitutes_the_entry_version(self):
+        archive = make_zip({"RenderDoc_1.47_64/renderdoc.dll": make_pe((1, 47, 0, 0)),
+                            "RenderDoc_1.47_64/Qt5Core.dll": make_pe((5, 15, 0, 0))})
+        server = FakeRangeServer(archive)
+        locator = {"type": "url-archive", "url": "https://renderdoc.org/stable/{version}/RenderDoc_{version}_64.zip",
+                   "path_regex": r"RenderDoc_[^/]+/renderdoc\.dll"}
+        with mock.patch.object(binaries.net, "SESSION", server):
+            found, errors = binaries.fetch_dll_versions([locator], {}, version="1.47")
+        self.assertEqual(errors, [])
+        self.assertEqual(found["renderdoc.dll"]["version"], "1.47.0.0")
+        self.assertEqual(found["renderdoc.dll"]["key"], "url:https://renderdoc.org/stable/1.47/RenderDoc_1.47_64.zip")
+
+    def test_url_template_without_version_is_reported(self):
+        locator = {"type": "url-archive", "url": "https://x/{version}.zip", "path_regex": ".*"}
+        found, errors = binaries.fetch_dll_versions([locator], {}, version=None)
+        self.assertEqual(found, {})
+        self.assertIn("{version}", errors[0])
+
     def test_unknown_locator_type_is_reported(self):
         found, errors = binaries.fetch_dll_versions([{"type": "ftp"}], {})
         self.assertEqual(found, {})

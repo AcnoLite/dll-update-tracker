@@ -71,6 +71,7 @@ SDK versions do not say which version each DLL carries. List `binaries` locators
 - **`github-file`** — DLLs committed to the repo (default branch). `path_regex` matches the path in the repo.
 - **`github-release-asset`** — DLLs inside a `.zip` or `.nupkg` attached to the latest release. `asset_regex` picks the asset, `path_regex` the members.
 - **`nuget`** — DLLs inside the latest stable NuGet package.
+- **`url-archive`** — DLLs inside a `.zip` at a vendor URL. `{version}` in `url` is replaced by the entry's stable version: `{"type": "url-archive", "url": "https://renderdoc.org/stable/{version}/RenderDoc_{version}_64.zip", "path_regex": "RenderDoc_[^/]+/renderdoc\\.dll"}`. The date is the server's `Last-Modified`.
 
 `path_regex` must match the whole path (case-insensitive, `/` separators even when the zip uses `\`). Pick one architecture (usually x64): when two paths give the same file name, the first one wins.
 

@@ -8,6 +8,9 @@ resources, wherever the vendor publishes it:
 - ``github-file``: DLLs committed to a GitHub repository
 - ``github-release-asset``: DLLs inside a zip (or .nupkg) attached to the latest release
 - ``nuget``: DLLs inside the latest stable NuGet package
+- ``url-archive``: DLLs inside a zip at a vendor URL; ``{version}`` in the URL
+  is replaced by the entry's stable version (RenderDoc publishes
+  ``renderdoc.org/stable/{version}/RenderDoc_{version}_64.zip``)
 
 Everything is read with HTTP Range requests, so only the PE headers and the
 resource section are downloaded (a few dozen KB out of a 60 MB DLL). Inside
@@ -370,19 +373,39 @@ def fetch_nuget_package(locator, previous):
     return found
 
 
+def fetch_url_archive(locator, previous):
+    url = locator["url"]
+    match = _matcher(locator)
+    key = f"url:{url}"
+    cached = _reuse_if_unchanged(previous, key)
+    if cached:
+        return cached
+
+    remote = _LazyRemote(url)
+    found = _versions_from_zip(remote.open, match, f"url-archive:{url}", key, None)
+    # The vendor's Last-Modified is the closest thing to a release date.
+    date = remote.raw.last_modified if remote.raw else None
+    for record in found.values():
+        record["date"] = date
+    print(f"    [dll] {url}: {len(found)} DLL(s), {remote.bytes_fetched // 1024} KB read", file=sys.stderr)
+    return found
+
+
 LOCATORS = frozendict({
     "github-file": fetch_github_files,
     "github-release-asset": fetch_release_asset,
     "nuget": fetch_nuget_package,
+    "url-archive": fetch_url_archive,
 })
 
 
-def fetch_dll_versions(locators, previous=None):
+def fetch_dll_versions(locators, previous=None, version=None):
     """Resolve every locator of an entry.
 
-    Returns (dll_versions, errors). dll_versions maps a DLL file name to its
-    record. A locator that fails keeps the DLLs it produced last time, so a
-    transient error never erases known versions.
+    ``version`` is the entry's stable version, substituted for ``{version}``
+    in locator URLs. Returns (dll_versions, errors). dll_versions maps a DLL
+    file name to its record. A locator that fails keeps the DLLs it produced
+    last time, so a transient error never erases known versions.
     """
     previous = previous or {}
     result = {}
@@ -393,6 +416,10 @@ def fetch_dll_versions(locators, previous=None):
         try:
             if handler is None:
                 raise BinaryError(f"unknown binary locator type {kind!r}")
+            if "{version}" in locator.get("url", ""):
+                if not version:
+                    raise BinaryError("URL needs {version} but the entry has no stable version")
+                locator = locator | {"url": locator["url"].replace("{version}", version)}
             found = handler(locator, previous)
             if not found:
                 raise BinaryError(f"{kind}: no file matches {locator.get('path_regex')}")
