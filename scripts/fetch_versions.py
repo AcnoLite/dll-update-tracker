@@ -28,6 +28,32 @@ def parse_version(tag):
     return tag.lstrip("v")
 
 
+def looks_like_version(version):
+    """Reject tags that are not versions at all (e.g. a "utils" tooling release)."""
+    return bool(version) and any(ch.isdigit() for ch in version)
+
+
+def version_key(version):
+    """Numeric parts of a version, for a rough ordering ("release-1.1.65" -> (1, 1, 65))."""
+    return tuple(int(n) for n in re.findall(r"\d+", version))
+
+
+def is_outdated_prerelease(stable, prerelease):
+    """A prerelease is outdated when it was published before the latest stable
+    and does not belong to a higher version line.
+
+    Example: Steam Audio 2.0-beta.20 (2021) vs 4.8.1 (2026) is outdated, but
+    DXC 1.10 preview (August) vs 1.9 stable patch (September) is not.
+    """
+    if not stable or not prerelease:
+        return False
+    if not stable.get("date") or not prerelease.get("date"):
+        return False
+    if prerelease["date"] > stable["date"]:
+        return False
+    return version_key(prerelease["version"]) <= version_key(stable["version"])
+
+
 # ─── GitHub Releases ──────────────────────────────────────────────
 
 def fetch_github_releases(repo):
@@ -48,6 +74,8 @@ def fetch_github_releases(repo):
             continue
 
         version = parse_version(rel["tag_name"])
+        if not looks_like_version(version):
+            continue
         date_str = rel.get("published_at", "")
         date = None
         if date_str:
@@ -64,6 +92,9 @@ def fetch_github_releases(repo):
 
         if stable and prerelease:
             break
+
+    if is_outdated_prerelease(stable, prerelease):
+        prerelease = None
 
     return stable, prerelease
 
@@ -85,6 +116,8 @@ def fetch_github_tags(repo):
     for ref in refs:
         tag = ref["ref"].replace("refs/tags/", "")
         version = parse_version(tag)
+        if not looks_like_version(version):
+            continue
         is_pre = bool(PRERELEASE_RE.search(version))
 
         entry = {"version": version, "date": None}
@@ -115,7 +148,11 @@ def fetch_nuget_versions(package_id):
     stable = None
     prerelease = None
 
+    # The index lists versions oldest first. Walking it newest first, a
+    # prerelease met after the latest stable is older than it: stop there.
     for ver in reversed(versions):
+        if not looks_like_version(ver):
+            continue
         is_pre = bool(PRERELEASE_RE.search(ver))
         entry = {"version": ver, "date": None}
 
@@ -123,10 +160,7 @@ def fetch_nuget_versions(package_id):
             if prerelease is None:
                 prerelease = entry
         else:
-            if stable is None:
-                stable = entry
-
-        if stable and prerelease:
+            stable = entry
             break
 
     # Fetch dates

@@ -47,6 +47,8 @@ The CI will automatically update `versions` and `last_checked`.
 
 If multiple sources are listed, they are tried in order. The first one to respond is used.
 
+A prerelease is only reported when it is newer than the latest stable: either published after it, or on a higher version line (a `1.10` preview next to a `1.9.x` stable patch). Tags without any digit are ignored.
+
 ### Entry keys
 
 | Field | Description |
