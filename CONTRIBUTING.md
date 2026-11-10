@@ -77,6 +77,13 @@ SDK versions do not say which version each DLL carries. List `binaries` locators
 
 Only the PE headers and the resource section are downloaded (HTTP Range), and only the matching zip members. A `key` (blob sha, asset id, package version) is stored with each DLL: unchanged binaries are never downloaded again. A failing locator keeps the DLL versions from the previous run and shows a warning; it never fails the run. DLLs without a version resource are skipped.
 
+Before adding `binaries`, check that the DLL's file version means something. Leave `binaries` out (and keep the DLLs in `dlls`) when it does not:
+
+- DXVK's DLLs report Windows' own version (`10.0.17763.1`), not DXVK's
+- OpenVR's `openvr_api.dll` still says `1.1.1.0` while the SDK is 2.x
+- vkd3d-proton's DLLs have no version resource
+- archives the fetcher cannot read: `.7z` (OptiScaler uses BCJ2, which `py7zr` cannot decode) and `.tar.*` (no random access, so the whole archive would be downloaded)
+
 To find the right paths, list an archive's members:
 
 ```bash

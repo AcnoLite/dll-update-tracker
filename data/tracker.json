@@ -1086,6 +1086,211 @@
       },
       "active_source": null,
       "last_checked": null
+    },
+    {
+      "id": "directml",
+      "vendor": "microsoft",
+      "name": "DirectML",
+      "role": "Hardware-accelerated machine learning on DirectX 12 (used by ML upscalers and frame generation)",
+      "dlls": [
+        "DirectML.dll"
+      ],
+      "sources": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.AI.DirectML"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.AI.DirectML",
+          "path_regex": "bin/x64-win/DirectML\\.dll"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "d3d-warp",
+      "vendor": "microsoft",
+      "name": "Direct3D WARP",
+      "role": "Software rasterizer for Direct3D 10/11/12, redistributable app-local",
+      "dlls": [
+        "d3d10warp.dll"
+      ],
+      "sources": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.Direct3D.WARP"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.Direct3D.WARP",
+          "path_regex": "build/native/bin/x64/d3d10warp\\.dll"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "gameinput",
+      "vendor": "microsoft",
+      "name": "GameInput",
+      "role": "Input API for gamepads, keyboards, mice and racing wheels (successor of XInput)",
+      "dlls": [
+        "GameInputRedist.dll",
+        "GameInput.dll"
+      ],
+      "sources": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.GameInput"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "nuget",
+          "package_id": "Microsoft.GameInput",
+          "path_regex": "native/bin/x64/GameInputRedist\\.dll"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "dxvk",
+      "vendor": "vulkan",
+      "name": "DXVK",
+      "role": "Direct3D 8/9/10/11 to Vulkan translation layer (Proton, modding). Its DLLs report Windows' version, not DXVK's",
+      "dlls": [
+        "d3d8.dll",
+        "d3d9.dll",
+        "d3d10core.dll",
+        "d3d11.dll",
+        "dxgi.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "doitsujin/dxvk"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "vkd3d-proton",
+      "vendor": "vulkan",
+      "name": "vkd3d-proton",
+      "role": "Direct3D 12 to Vulkan translation layer (Proton, modding)",
+      "dlls": [
+        "d3d12.dll",
+        "d3d12core.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "HansKristian-Work/vkd3d-proton"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "openvr",
+      "vendor": "other",
+      "name": "OpenVR",
+      "role": "Valve VR runtime API (SteamVR). The DLL's version resource is not maintained",
+      "dlls": [
+        "openvr_api.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "ValveSoftware/openvr"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "sdl3",
+      "vendor": "other",
+      "name": "SDL3",
+      "role": "Cross-platform windowing, input, audio and GPU abstraction",
+      "dlls": [
+        "SDL3.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "libsdl-org/SDL"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "github-release-asset",
+          "repo": "libsdl-org/SDL",
+          "asset_regex": "SDL3-[\\d.]+-win32-x64\\.zip",
+          "path_regex": "SDL3\\.dll"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
+    },
+    {
+      "id": "optiscaler",
+      "vendor": "other",
+      "name": "OptiScaler",
+      "role": "Swaps DLSS/FSR/XeSS between each other in games; ships fakenvapi and the DLSS-G to FSR3 bridge",
+      "dlls": [
+        "OptiScaler.dll",
+        "fakenvapi.dll",
+        "dlssg_to_fsr3_amd_is_better.dll"
+      ],
+      "sources": [
+        {
+          "type": "github",
+          "repo": "optiscaler/OptiScaler"
+        }
+      ],
+      "versions": {
+        "stable": null,
+        "prerelease": null
+      },
+      "active_source": null,
+      "last_checked": null
     }
   ]
 }
