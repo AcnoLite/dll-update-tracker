@@ -960,11 +960,9 @@
       ],
       "sources": [
         {
-          "type": "scraping-html",
-          "url": "https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist",
-          "selector": "table tbody tr:first-child td:first-child a",
-          "regex": "([0-9]+\\.[0-9]+\\.[0-9]+)",
-          "label": "Microsoft Learn"
+          "type": "pe-version",
+          "url": "https://aka.ms/vs/17/release/vc_redist.x64.exe",
+          "label": "Microsoft"
         }
       ],
       "versions": {

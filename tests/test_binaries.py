@@ -98,6 +98,20 @@ class RemoteFileTest(unittest.TestCase):
             found = binaries._versions_from_zip(lambda: f, re.compile(r".*\.dll"), "src", "k1", None)
         self.assertEqual(found["libxess.dll"]["version"], "2.0.2.68")
 
+    def test_remote_pe_version_uses_last_modified_as_date(self):
+        server = FakeRangeServer(make_pe((14, 44, 35211, 0)))
+        original_get = server.get
+
+        def get(url, headers=None, **kwargs):
+            resp = original_get(url, headers=headers, **kwargs)
+            resp.headers["Last-Modified"] = "Tue, 15 Apr 2025 10:00:00 GMT"
+            return resp
+
+        server.get = get
+        with mock.patch.object(binaries.net, "SESSION", server):
+            result = binaries.remote_pe_version("https://aka.ms/vs/17/release/vc_redist.x64.exe")
+        self.assertEqual(result, {"version": "14.44.35211.0", "date": "2025-04-15"})
+
     def test_server_without_range_support_is_an_error(self):
         resp = mock.Mock(status_code=200)
         resp.raise_for_status.return_value = None

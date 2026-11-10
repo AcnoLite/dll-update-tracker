@@ -46,6 +46,7 @@ The CI will automatically update `versions` and `last_checked`.
 - **`github-tags`** — GitHub tags (if the repo has no releases). The highest tag by version number wins. `"repo": "owner/repo"`
 - **`github-commits`** — For repos that never tag. With `"regex"`, the first recent commit message that matches gives the version (group 1): `{"repo": "NVIDIA/nvapi", "regex": "^(R\\d+)"}`. Without it, the version is the latest commit's short sha, flagged `"rolling": true` (shown as "latest commit", kept out of the recent releases feed). Optional `"branch"`.
 - **`nuget`** — NuGet package. `"package_id": "Package.Name"`
+- **`pe-version`** — File version of a remote DLL or installer EXE behind a stable "latest" link, read over HTTP Range (date from `Last-Modified`). `"url": "https://aka.ms/vs/17/release/vc_redist.x64.exe"`
 - **`scraping-json`** — JSON endpoint. `"url": "...", "json_path": "version"` (dot-delimited path)
 - **`scraping-html`** — HTML page with CSS selector + optional regex. `"url": "...", "selector": "h1", "regex": "v(\\d+\\.\\d+)"`
 

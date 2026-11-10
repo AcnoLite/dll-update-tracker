@@ -303,6 +303,11 @@ def fetch_entry(entry):
                 if result:
                     return result, None, f"github-commits:{source['repo']}", errors
 
+            elif src_type == "pe-version":
+                result = binaries.remote_pe_version(source["url"])
+                if result:
+                    return result, None, f"pe-version:{source['url']}", errors
+
             elif src_type == "scraping-json":
                 result = fetch_scraping_json(source)
                 if result:

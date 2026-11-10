@@ -54,7 +54,7 @@ def source_links(entry):
             parts.append(f"[NuGet](https://www.nuget.org/packages/{pkg}/)")
         elif t == "vulkan-sdk":
             parts.append(f"[Lunarg](https://vulkan.lunarg.com/sdk/home)")
-        elif t in ("scraping", "scraping-html", "scraping-json"):
+        elif t in ("scraping", "scraping-html", "scraping-json", "pe-version"):
             url = src.get("url", "#")
             label = src.get("label", "Website")
             parts.append(f"[{label}]({url})")

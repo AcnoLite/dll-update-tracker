@@ -18,6 +18,7 @@ key has not changed since the previous run, the stored version is reused
 and nothing is downloaded.
 """
 
+import email.utils
 import io
 import posixpath
 import re
@@ -64,6 +65,7 @@ class RemoteFile(io.RawIOBase):
             raise BinaryError(f"{url}: unexpected Content-Range {content_range!r}")
         self.size = int(match.group(1))
         self.url = resp.url
+        self.last_modified = _http_date(resp.headers.get("Last-Modified"))
 
     def readable(self):
         return True
@@ -101,6 +103,27 @@ class RemoteFile(io.RawIOBase):
         self.pos += len(data)
         self.bytes_fetched += len(data)
         return len(data)
+
+
+def _http_date(value):
+    """"Tue, 15 Apr 2025 10:00:00 GMT" -> "2025-04-15"; None when absent or invalid."""
+    if not value:
+        return None
+    try:
+        return email.utils.parsedate_to_datetime(value).strftime("%Y-%m-%d")
+    except (TypeError, ValueError):
+        return None
+
+
+def remote_pe_version(url):
+    """File version of a remote PE (DLL or installer EXE), read over HTTP Range.
+
+    Returns {"version", "date"}; the date is the server's Last-Modified, if any.
+    """
+    raw, f = open_remote(url)
+    version = pe_file_version(f)
+    print(f"    [pe] {url} = {version} ({raw.bytes_fetched // 1024} KB read)", file=sys.stderr)
+    return {"version": version, "date": raw.last_modified}
 
 
 def open_remote(url, headers=None):
