@@ -363,6 +363,14 @@ h2 {
   color: var(--muted);
 }
 
+.result-count {
+  font-size: var(--step--1);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.result-count:empty { display: none; }
+
 #reset-filters {
   font: inherit;
   font-size: var(--step--1);
@@ -427,7 +435,8 @@ h2 {
 .register thead th:nth-child(4) { width: 31%; }
 .register thead th:nth-child(5) { width: 10%; }
 
-.register tbody tr:target { background: var(--paper-raised); }
+.register tbody tr:target,
+.register tbody tr.is-target { background: var(--paper-raised); }
 
 .sdk-cell { font-weight: 400; }
 
@@ -495,6 +504,25 @@ h2 {
   font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
+
+.dll-version[title] { cursor: help; }
+
+.dll-more > summary {
+  display: inline-block;
+  margin-top: 0.2rem;
+  color: var(--link);
+  cursor: pointer;
+  list-style: none;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+.dll-more > summary::-webkit-details-marker { display: none; }
+.dll-more[open] > summary { margin-bottom: 0.1rem; }
+.dll-more .when-open,
+.dll-more[open] .when-closed { display: none; }
+.dll-more[open] .when-open { display: inline; }
 
 .source-cell { font-size: var(--step--1); }
 

@@ -20,6 +20,9 @@ const FEED_WINDOW_DAYS = 45;
 const FEED_MAX = 10;
 const FEED_MIN = 5;
 
+/* DLL lists longer than this are folded behind a "N more DLLs" toggle. */
+const DLL_PREVIEW = 5;
+
 const DAY_MS = 86400000;
 
 const $ = (sel) => document.querySelector(sel);
@@ -59,6 +62,8 @@ function initTheme() {
     }
   });
 }
+
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let allEntries = [];
 let initialized = false;
@@ -127,12 +132,14 @@ function versionHtml(version, days) {
 /* ================= Status line ================= */
 
 function renderStatus(meta) {
-  const vendors = new Set(allEntries.map(e => e.vendor)).size;
+  const dlls = allEntries.flatMap(dllItems);
+  const versioned = dlls.filter(d => d.record?.version).length;
   const checked = meta.last_updated
     || allEntries.map(e => e.last_checked).filter(Boolean).sort().pop();
   const when = fmtDate(checked, { day: 'numeric', month: 'long', year: 'numeric' });
   $('#status-line').textContent =
-    `${allEntries.length} SDKs from ${vendors} vendors.` + (when ? ` Last checked ${when}.` : '');
+    `${allEntries.length} SDKs and ${dlls.length} DLLs, ${versioned} of them with a version read from the file.`
+    + (when ? ` Last checked ${when}.` : '');
 }
 
 /* ================= Recent releases ================= */
@@ -202,8 +209,10 @@ function isDefaultFilters() {
     && $$('.vendor-chip.active').length === VENDOR_ORDER.length;
 }
 
-function updateResetButton() {
-  $('#reset-filters').hidden = isDefaultFilters();
+function updateResetButton(shown) {
+  const filtered = !isDefaultFilters();
+  $('#reset-filters').hidden = !filtered;
+  $('#result-count').textContent = filtered ? `${shown} of ${allEntries.length} SDKs` : '';
 }
 
 function resetFilters() {
@@ -233,7 +242,7 @@ function renderDashboard() {
         <p>No SDK matches these filters.</p>
         <p class="hint">Check the spelling, or clear the filters to see all ${allEntries.length} SDKs.</p>
       </div>`;
-    updateResetButton();
+    updateResetButton(0);
     return;
   }
 
@@ -260,12 +269,12 @@ function renderDashboard() {
                 <th scope="col">Source</th>
               </tr>
             </thead>
-            <tbody>${entries.map(renderRow).join('')}</tbody>
+            <tbody>${entries.map(e => renderRow(e, query)).join('')}</tbody>
           </table>
         </section>`;
     }).join('');
 
-  updateResetButton();
+  updateResetButton(filtered.length);
 }
 
 function renderVersionCell(v, label, emptyText) {
@@ -321,10 +330,23 @@ function renderDll({ name, record }) {
   }
   const date = parseDate(record.date);
   const days = date ? daysSince(date) : null;
-  return `<span class="dll"><span class="dll-name">${escapeHtml(name)}</span><span class="dll-version">${versionHtml(record.version, days)}</span></span>`;
+  const origin = record.source ? ` title="File version read from ${escapeHtml(record.source)}"` : '';
+  return `<span class="dll"><span class="dll-name">${escapeHtml(name)}</span><span class="dll-version"${origin}>${versionHtml(record.version, days)}</span></span>`;
 }
 
-function renderRow(entry) {
+/* Long lists show their first DLLs and fold the rest. The fold opens by itself
+   when the search matches one of the folded names, so a hit is never hidden. */
+function renderDllList(dlls, query) {
+  if (dlls.length === 0) return '<span class="muted">No DLL</span>';
+  if (dlls.length <= DLL_PREVIEW + 1) return dlls.map(renderDll).join('');
+  const shown = dlls.slice(0, DLL_PREVIEW);
+  const folded = dlls.slice(DLL_PREVIEW);
+  const open = query && folded.some(d => d.name.toLowerCase().includes(query)) ? ' open' : '';
+  return shown.map(renderDll).join('')
+    + `<details class="dll-more"${open}><summary><span class="when-closed">${folded.length} more DLLs</span><span class="when-open">Show fewer</span></summary>${folded.map(renderDll).join('')}</details>`;
+}
+
+function renderRow(entry, query = '') {
   const versions = entry.versions || {};
   const dlls = dllItems(entry);
   const stableEmpty = entry.manual ? 'Updated by hand' : 'Not found';
@@ -338,14 +360,39 @@ function renderRow(entry) {
       </th>
       ${renderVersionCell(versions.stable, 'Stable', stableEmpty)}
       ${renderVersionCell(versions.prerelease, 'Pre-release', '<span class="muted">None</span>')}
-      <td class="dll-cell" data-label="DLLs">${dlls.length
-        ? dlls.map(renderDll).join('')
-        : '<span class="muted">No DLL</span>'}</td>
+      <td class="dll-cell" data-label="DLLs">${renderDllList(dlls, query)}</td>
       <td class="source-cell" data-label="Source">${renderSources(entry)}</td>
     </tr>`;
 }
 
 /* ================= Behaviour ================= */
+
+/* Jump to an SDK row. If the filters hide it, clear them first: a link from the
+   recent releases feed must always land somewhere. */
+function goToSdk(hash) {
+  if (!hash.startsWith('#sdk-')) return false;
+  let row = document.getElementById(decodeURIComponent(hash.slice(1)));
+  if (!row) {
+    resetFilters();
+    row = document.getElementById(decodeURIComponent(hash.slice(1)));
+  }
+  if (!row) return false;
+  if (location.hash !== hash) {
+    history.pushState(null, '', hash);
+  }
+  $$('.register tr.is-target').forEach(r => r.classList.remove('is-target'));
+  row.classList.add('is-target');
+  row.scrollIntoView({ block: 'start', behavior: REDUCED_MOTION ? 'auto' : 'smooth' });
+  return true;
+}
+
+function initSdkLinks() {
+  $('#recent-list').addEventListener('click', (e) => {
+    const link = e.target.closest('a.recent-name');
+    if (link && goToSdk(link.getAttribute('href'))) e.preventDefault();
+  });
+  window.addEventListener('popstate', () => goToSdk(location.hash));
+}
 
 function initStickyControls() {
   const bar = $('#controls-sticky');
@@ -404,12 +451,15 @@ async function init() {
       });
       $('#search-input').addEventListener('input', renderDashboard);
       $('#reset-filters').addEventListener('click', resetFilters);
+      initSdkLinks();
     }
 
     renderStatus(data._meta || {});
     renderRecent();
     renderVendorFilters();
     renderDashboard();
+    // The rows exist only now: honour a #sdk-… link opened directly.
+    if (location.hash) goToSdk(location.hash);
   } catch (err) {
     console.error('Failed to load tracker data:', err);
     showError('Could not read data/tracker.json. Check that the file exists and is valid JSON, then try again.');
