@@ -210,13 +210,28 @@ class FetchDllVersionsTest(unittest.TestCase):
             found, errors = binaries.fetch_dll_versions([locator], {}, version="1.47")
         self.assertEqual(errors, [])
         self.assertEqual(found["renderdoc.dll"]["version"], "1.47.0.0")
-        self.assertEqual(found["renderdoc.dll"]["key"], "url:https://renderdoc.org/stable/1.47/RenderDoc_1.47_64.zip")
+        self.assertTrue(found["renderdoc.dll"]["key"].startswith("url:https://renderdoc.org/stable/1.47/RenderDoc_1.47_64.zip|"))
 
     def test_url_template_without_version_is_reported(self):
         locator = {"type": "url-archive", "url": "https://x/{version}.zip", "path_regex": ".*"}
         found, errors = binaries.fetch_dll_versions([locator], {}, version=None)
         self.assertEqual(found, {})
         self.assertIn("{version}", errors[0])
+
+    def test_widening_path_regex_reads_the_archive_again(self):
+        # The previous run matched only sl.reflex.dll; the regex now also wants sl.pcl.dll.
+        archive = make_zip({"bin/x64/sl.reflex.dll": make_pe((2, 14, 16, 0)),
+                            "bin/x64/sl.pcl.dll": make_pe((2, 14, 16, 0))})
+        old = {"type": "nuget", "package_id": "P", "path_regex": r"bin/x64/sl\.reflex\.dll"}
+        new = dict(old, path_regex=r"bin/x64/sl\.(reflex|pcl)\.dll")
+        previous = {"sl.reflex.dll": {"version": "2.14.16.0", "source": "nuget:P/1.0:bin/x64/sl.reflex.dll",
+                                      "key": binaries._archive_key("nuget:p:1.0", old)}}
+        binaries._RUN_CACHE.clear()
+        with mock.patch.object(binaries, "latest_nuget_stable", return_value="1.0"), \
+             mock.patch.object(binaries.net, "SESSION", FakeRangeServer(archive)):
+            found, errors = binaries.fetch_dll_versions([new], previous)
+        self.assertEqual(errors, [])
+        self.assertEqual(sorted(found), ["sl.pcl.dll", "sl.reflex.dll"])
 
     def test_unknown_locator_type_is_reported(self):
         found, errors = binaries.fetch_dll_versions([{"type": "ftp"}], {})

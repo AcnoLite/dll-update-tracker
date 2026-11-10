@@ -32,12 +32,12 @@ def iso_day(timestamp):
     return datetime.fromisoformat(timestamp).strftime("%Y-%m-%d")
 
 
-TAG_PREFIX_RE = re.compile(r"(release-|v)", re.IGNORECASE)
+TAG_PREFIX_RE = re.compile(r"^(release-|v)", re.IGNORECASE)
 
 
 def parse_version(tag):
     """Strip tag decorations: "v1.2.3" and "release-3.4.20" (SDL, OpenXR) -> the version."""
-    return TAG_PREFIX_RE.sub("", tag, count=1) if TAG_PREFIX_RE.prefixmatch(tag) else tag
+    return TAG_PREFIX_RE.sub("", tag, count=1)
 
 
 def looks_like_version(version):
@@ -327,11 +327,17 @@ def fetch_entry(entry):
     return None, None, None, errors
 
 
+def annotation_escape(text):
+    """Encode a GitHub Actions workflow-command message: %, CR and LF must be
+    escaped, or a multi-line exception message breaks the annotation."""
+    return text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
 def report_failure(entry_id, messages, title="Fetch failed"):
     """Print a failure, as a GitHub Actions annotation when running in CI."""
     detail = "; ".join(messages) if messages else "no source returned a version"
     if os.environ.get("GITHUB_ACTIONS") == "true":
-        print(f"::warning title={title}: {entry_id}::{detail}")
+        print(f"::warning title={title}: {entry_id}::{annotation_escape(detail)}")
     return f"{entry_id}: {detail}"
 
 
@@ -382,8 +388,7 @@ def main():
         stable, prerelease, active, source_errors = fetch_entry(entry)
 
         if stable or prerelease:
-            entry["versions"]["stable"] = stable
-            entry["versions"]["prerelease"] = prerelease
+            entry["versions"] = {"stable": stable, "prerelease": prerelease}
             entry["active_source"] = active
             entry["last_checked"] = today
             updated += 1

@@ -113,6 +113,11 @@ class ParseVersionTest(unittest.TestCase):
         self.assertEqual(fv.parse_version("2.0-beta.20"), "2.0-beta.20")
 
 
+class AnnotationTest(unittest.TestCase):
+    def test_multiline_messages_are_encoded(self):
+        self.assertEqual(fv.annotation_escape("100% failed\r\nretry"), "100%25 failed%0D%0Aretry")
+
+
 class GithubTagsTest(unittest.TestCase):
     def test_highest_version_wins_over_alphabetical_order(self):
         refs = [{"ref": f"refs/tags/{t}"} for t in ["3.10.0", "3.4.2-bsd", "3.9.1", "4.0.0", "nightly"]]

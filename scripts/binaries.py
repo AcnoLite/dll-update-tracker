@@ -318,6 +318,12 @@ def _versions_from_zip(open_archive, match, source_prefix, key, date):
     return found
 
 
+def _archive_key(identity, locator):
+    """Cache key of an archive locator: the archive identity plus the member
+    filter, so widening ``path_regex`` reads the archive again."""
+    return f"{identity}|{locator['path_regex']}"
+
+
 def _reuse_if_unchanged(previous, key):
     cached = {name: rec for name, rec in previous.items() if rec.get("key") == key}
     return cached or None
@@ -332,7 +338,7 @@ def fetch_release_asset(locator, previous):
     if asset is None:
         raise BinaryError(f"{repo} {release.get('tag_name')}: no asset matches {locator['asset_regex']}")
 
-    key = f"asset:{asset['id']}:{asset.get('updated_at', '')}"
+    key = _archive_key(f"asset:{asset['id']}:{asset.get('updated_at', '')}", locator)
     cached = _reuse_if_unchanged(previous, key)
     if cached:
         return cached
@@ -360,7 +366,7 @@ def fetch_nuget_package(locator, previous):
     if not version:
         raise BinaryError(f"{package_id}: no stable version on NuGet")
 
-    key = f"nuget:{package_id.lower()}:{version}"
+    key = _archive_key(f"nuget:{package_id.lower()}:{version}", locator)
     cached = _reuse_if_unchanged(previous, key)
     if cached:
         return cached
@@ -376,7 +382,7 @@ def fetch_nuget_package(locator, previous):
 def fetch_url_archive(locator, previous):
     url = locator["url"]
     match = _matcher(locator)
-    key = f"url:{url}"
+    key = _archive_key(f"url:{url}", locator)
     cached = _reuse_if_unchanged(previous, key)
     if cached:
         return cached
