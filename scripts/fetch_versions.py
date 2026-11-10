@@ -32,8 +32,12 @@ def iso_day(timestamp):
     return datetime.fromisoformat(timestamp).strftime("%Y-%m-%d")
 
 
+TAG_PREFIX_RE = re.compile(r"(release-|v)", re.IGNORECASE)
+
+
 def parse_version(tag):
-    return tag.lstrip("v")
+    """Strip tag decorations: "v1.2.3" and "release-3.4.20" (SDL, OpenXR) -> the version."""
+    return TAG_PREFIX_RE.sub("", tag, count=1) if TAG_PREFIX_RE.prefixmatch(tag) else tag
 
 
 def looks_like_version(version):

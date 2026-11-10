@@ -105,6 +105,14 @@ class OutdatedPrereleaseTest(unittest.TestCase):
             {"version": "release-1.0.21", "date": "2022-01-12"}))
 
 
+class ParseVersionTest(unittest.TestCase):
+    def test_tag_prefixes_are_stripped(self):
+        self.assertEqual(fv.parse_version("v1.2.3"), "1.2.3")
+        self.assertEqual(fv.parse_version("release-3.4.20"), "3.4.20")
+        self.assertEqual(fv.parse_version("RELEASE_20200207"), "RELEASE_20200207")
+        self.assertEqual(fv.parse_version("2.0-beta.20"), "2.0-beta.20")
+
+
 class GithubTagsTest(unittest.TestCase):
     def test_highest_version_wins_over_alphabetical_order(self):
         refs = [{"ref": f"refs/tags/{t}"} for t in ["3.10.0", "3.4.2-bsd", "3.9.1", "4.0.0", "nightly"]]
