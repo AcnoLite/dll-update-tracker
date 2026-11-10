@@ -151,6 +151,7 @@
       "role": "CPU+GPU debug/profiling markers",
       "dlls": [
         "WinPixEventRuntime.dll",
+        "WinPixGpuCapturer.dll",
         "WinPixTimingCapturer.dll"
       ],
       "sources": [
@@ -281,6 +282,7 @@
       "name": "Anti-Lag 2",
       "role": "Input-to-display latency reduction, AMD equivalent of Reflex",
       "dlls": [
+        "amdxc64.dll",
         "amdxx64.dll"
       ],
       "sources": [
@@ -352,10 +354,9 @@
         "nvngx_dlss.dll",
         "nvngx_dlssg.dll",
         "nvngx_dlssd.dll",
-        "nvngx.dll",
-        "_nvngx.dll",
         "nvngx_deepdvc.dll",
-        "nvngx_truehdr.dll"
+        "nvngx.dll",
+        "_nvngx.dll"
       ],
       "sources": [
         {
@@ -519,7 +520,14 @@
       "vendor": "nvidia",
       "name": "PhysX",
       "role": "Physics engine (rigidbody, soft body, cloth, fluids, destruction)",
-      "dlls": [],
+      "dlls": [
+        "PhysX_64.dll",
+        "PhysXCommon_64.dll",
+        "PhysXFoundation_64.dll",
+        "PhysXCooking_64.dll",
+        "PhysXGpu_64.dll",
+        "PhysXDevice64.dll"
+      ],
       "sources": [
         {
           "type": "github",
@@ -663,7 +671,7 @@
       "dlls": [
         "phonon.dll",
         "phonon_fmod.dll",
-        "phonon_unity.dll",
+        "audioplugin_phonon.dll",
         "GPUUtilities.dll",
         "TrueAudioNext.dll"
       ],
@@ -783,7 +791,9 @@
       "vendor": "nvidia",
       "name": "NRD (Real-time Denoisers)",
       "role": "Real-time denoisers for ray tracing (ReBLUR, ReLAX)",
-      "dlls": [],
+      "dlls": [
+        "NRD.dll"
+      ],
       "sources": [
         {
           "type": "github",
@@ -806,7 +816,9 @@
       "vendor": "nvidia",
       "name": "NRi (NRD Interface)",
       "role": "Render abstraction layer for NRD, supports D3D11/D3D12/Vulkan",
-      "dlls": [],
+      "dlls": [
+        "NRI.dll"
+      ],
       "sources": [
         {
           "type": "github",
@@ -930,12 +942,19 @@
       "role": "GPU debug, render frame capture and analysis",
       "dlls": [
         "renderdoc.dll",
-        "renderdocshim.dll"
+        "renderdocshim64.dll"
       ],
       "sources": [
         {
           "type": "github",
           "repo": "baldurk/renderdoc"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "url-archive",
+          "url": "https://renderdoc.org/stable/{version}/RenderDoc_{version}_64.zip",
+          "path_regex": "RenderDoc_[^/]+/renderdoc(shim64)?\\.dll"
         }
       ],
       "versions": {
@@ -955,8 +974,17 @@
       "role": "Microsoft C++ runtime, required by most Windows applications",
       "dlls": [
         "vcruntime140.dll",
+        "vcruntime140_1.dll",
+        "vcruntime140_threads.dll",
         "msvcp140.dll",
-        "vcruntime140_1.dll"
+        "msvcp140_1.dll",
+        "msvcp140_2.dll",
+        "msvcp140_atomic_wait.dll",
+        "msvcp140_codecvt_ids.dll",
+        "concrt140.dll",
+        "vccorlib140.dll",
+        "vcomp140.dll",
+        "vcamp140.dll"
       ],
       "sources": [
         {
@@ -1031,7 +1059,11 @@
       "name": "PhysX Legacy (v4)",
       "role": "v4 physics engine, distributed as standalone DLL",
       "dlls": [
-        "PhysX_9.13.12611_win64.dll",
+        "PhysX_64.dll",
+        "PhysXCommon_64.dll",
+        "PhysXFoundation_64.dll",
+        "PhysXCooking_64.dll",
+        "PhysXGpu_64.dll",
         "PhysXDevice64.dll"
       ],
       "sources": [
@@ -1039,6 +1071,13 @@
           "type": "github",
           "repo": "NVIDIAGameWorks/PhysX",
           "note": "Legacy, replaced by PhysX 5, archived repo"
+        }
+      ],
+      "binaries": [
+        {
+          "type": "github-file",
+          "repo": "NVIDIAGameWorks/PhysX",
+          "path_regex": "physx/bin/win\\.x86_64\\.vc140\\.mt/release/PhysX(Gpu_64|Device64)\\.dll"
         }
       ],
       "versions": {
