@@ -3,8 +3,11 @@
 Run with: python -m unittest discover -s tests
 """
 
+import json
 import os
+import shutil
 import sys
+import tempfile
 import unittest
 from unittest import mock
 
@@ -100,6 +103,76 @@ class OutdatedPrereleaseTest(unittest.TestCase):
         self.assertTrue(fv.is_outdated_prerelease(
             {"version": "release-1.1.65", "date": "2026-10-16"},
             {"version": "release-1.0.21", "date": "2022-01-12"}))
+
+
+class FetchEntryErrorsTest(unittest.TestCase):
+    def test_failing_sources_are_reported(self):
+        entry = {"sources": [{"type": "github", "repo": "a/b"}, {"type": "nuget", "package_id": "P"}]}
+        with mock.patch.object(fv.requests, "get", side_effect=RuntimeError("rate limited")):
+            stable, pre, active, errors = fv.fetch_entry(entry)
+        self.assertIsNone(stable)
+        self.assertIsNone(active)
+        self.assertEqual(len(errors), 2)
+        self.assertIn("rate limited", errors[0])
+
+    def test_fallback_success_keeps_earlier_errors(self):
+        entry = {"sources": [{"type": "scraping-json", "url": "https://x/a.json", "json_path": "v"},
+                             {"type": "scraping-json", "url": "https://x/b.json", "json_path": "v"}]}
+        responses = [RuntimeError("boom"), fake_response({"v": "1.2.3"})]
+        with mock.patch.object(fv.requests, "get", side_effect=responses):
+            stable, _, active, errors = fv.fetch_entry(entry)
+        self.assertEqual(stable["version"], "1.2.3")
+        self.assertEqual(active, "scraping-json:https://x/b.json")
+        self.assertEqual(len(errors), 1)
+
+
+class MainExitCodeTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.path = os.path.join(self.tmp, "tracker.json")
+        tracker = {
+            "_meta": {"last_updated": "2026-01-01"},
+            "entries": [
+                {"id": "a", "sources": [{"type": "nuget", "package_id": "A"}],
+                 "versions": {"stable": {"version": "1.0", "date": None}, "prerelease": None},
+                 "last_checked": "2026-01-01"},
+                {"id": "b", "sources": [{"type": "nuget", "package_id": "B"}],
+                 "versions": {"stable": {"version": "2.0", "date": None}, "prerelease": None},
+                 "last_checked": "2026-01-01"},
+                {"id": "m", "manual": True, "sources": [], "versions": {}, "last_checked": None},
+            ],
+        }
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(tracker, f)
+        patcher = mock.patch.object(fv, "TRACKER_PATH", self.path)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.addCleanup(shutil.rmtree, self.tmp)
+
+    def run_main(self, nuget_side_effect):
+        with mock.patch.object(fv, "fetch_nuget_versions", side_effect=nuget_side_effect), \
+             mock.patch("sys.stdout"), mock.patch("sys.stderr"):
+            code = fv.main()
+        with open(self.path, encoding="utf-8") as f:
+            return code, {e["id"]: e for e in json.load(f)["entries"]}
+
+    def test_every_entry_failing_exits_1(self):
+        code, entries = self.run_main(RuntimeError("outage"))
+        self.assertEqual(code, 1)
+        self.assertEqual(entries["a"]["last_checked"], "2026-01-01")
+        self.assertEqual(entries["a"]["versions"]["stable"]["version"], "1.0")
+
+    def test_partial_failure_exits_0_and_keeps_failed_entry_untouched(self):
+        def nuget(package_id):
+            if package_id == "A":
+                return {"version": "1.1", "date": None}, None
+            raise RuntimeError("404")
+
+        code, entries = self.run_main(nuget)
+        self.assertEqual(code, 0)
+        self.assertEqual(entries["a"]["versions"]["stable"]["version"], "1.1")
+        self.assertNotEqual(entries["a"]["last_checked"], "2026-01-01")
+        self.assertEqual(entries["b"]["last_checked"], "2026-01-01")
 
 
 if __name__ == "__main__":

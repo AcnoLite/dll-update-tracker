@@ -38,7 +38,8 @@ Unit tests for `fetch_versions.py` live in `tests/` (stdlib `unittest`, network 
 - Tags with no digit (e.g. a `utils` tooling release) are never treated as versions (`looks_like_version`).
 - An outdated prerelease is dropped: for GitHub releases, one published before the latest stable and not on a higher version line (`is_outdated_prerelease`); for NuGet, any prerelease below the latest stable. `github-tags` has no dates and no reliable order, so it is not filtered.
 - Entries with `manual: true` or no `sources` are skipped and keep their versions as they are (shown with 🔒 in the README).
-- A source that fails is logged to stderr and the next one is tried. The `errors` list in `main()` is never populated, so the script always exits 0, even when every fetch fails.
+- A source that raises is logged to stderr and the next one is tried; `fetch_entry` returns those messages. An entry with no version from any source counts as failed: its versions and `last_checked` are left untouched, and in CI it is emitted as a `::warning::` annotation.
+- Exit code: 0 when at least one automatic entry updated (CI still commits partial results), 1 when every automatic entry failed (outage: rate limit, network, token), which stops the CI before it commits.
 
 ## Front-end (`app.js`)
 

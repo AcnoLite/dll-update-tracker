@@ -201,24 +201,20 @@ def fetch_scraping_json(source):
     if not url:
         return None
 
-    try:
-        resp = requests.get(url, timeout=30, allow_redirects=True)
-        resp.raise_for_status()
-        data = resp.json()
+    resp = requests.get(url, timeout=30, allow_redirects=True)
+    resp.raise_for_status()
+    data = resp.json()
 
-        # Navigate nested path like "windows" or "windows.x64"
-        value = data
-        for key in json_path.split("."):
-            if isinstance(value, dict):
-                value = value.get(key)
-            else:
-                return None
+    # Navigate nested path like "windows" or "windows.x64"
+    value = data
+    for key in json_path.split("."):
+        if isinstance(value, dict):
+            value = value.get(key)
+        else:
+            return None
 
-        if value and isinstance(value, str):
-            return {"version": value, "date": None}
-
-    except Exception as e:
-        print(f"    [!] scraping-json failed: {e}", file=sys.stderr)
+    if value and isinstance(value, str):
+        return {"version": value, "date": None}
 
     return None
 
@@ -227,11 +223,8 @@ def fetch_scraping_json(source):
 
 def fetch_scraping_html(source):
     """Fetch version from an HTML page using CSS selector + regex."""
-    try:
-        from scrapling.fetchers import Fetcher
-    except ImportError:
-        print("    [!] scrapling not installed, skipping", file=sys.stderr)
-        return None
+    # A missing scrapling raises ImportError, which fetch_entry records as a failure.
+    from scrapling.fetchers import Fetcher
 
     url = source.get("url", "")
     selector = source.get("selector", "")
@@ -240,37 +233,33 @@ def fetch_scraping_html(source):
     if not url:
         return None
 
-    try:
-        page = Fetcher.get(url)
-        if not page or not page.status or page.status != 200:
-            return None
+    page = Fetcher.get(url)
+    if not page or page.status != 200:
+        raise RuntimeError(f"HTTP {getattr(page, 'status', None)} from {url}")
 
-        version = None
+    version = None
 
-        # Try CSS selector first
-        if selector:
-            elements = page.css(selector)
-            if elements:
-                text = elements[0].text.strip()
-                if regex:
-                    match = re.search(regex, text)
-                    if match:
-                        version = match.group(1)
-                else:
-                    version = text
+    # Try CSS selector first
+    if selector:
+        elements = page.css(selector)
+        if elements:
+            text = elements[0].text.strip()
+            if regex:
+                match = re.search(regex, text)
+                if match:
+                    version = match.group(1)
+            else:
+                version = text
 
-        # Fallback: regex on full page text
-        if not version and regex:
-            all_text = page.get_all_text()
-            match = re.search(regex, all_text)
-            if match:
-                version = match.group(1)
+    # Fallback: regex on full page text
+    if not version and regex:
+        all_text = page.get_all_text()
+        match = re.search(regex, all_text)
+        if match:
+            version = match.group(1)
 
-        if version:
-            return {"version": version, "date": None}
-
-    except Exception as e:
-        print(f"    [!] scraping-html failed: {e}", file=sys.stderr)
+    if version:
+        return {"version": version, "date": None}
 
     return None
 
@@ -278,7 +267,13 @@ def fetch_scraping_html(source):
 # ─── Main fetcher ─────────────────────────────────────────────────
 
 def fetch_entry(entry):
-    """Fetch versions for an entry based on its sources. Returns (stable, prerelease, active_source_type)."""
+    """Fetch versions for an entry based on its sources.
+
+    Returns (stable, prerelease, active_source, errors). Sources are tried in
+    order; errors lists one message per source that raised, so the caller can
+    tell "no version published" apart from "every source failed".
+    """
+    errors = []
     for source in entry.get("sources", []):
         src_type = source.get("type")
 
@@ -286,42 +281,51 @@ def fetch_entry(entry):
             if src_type == "github":
                 stable, prerelease = fetch_github_releases(source["repo"])
                 if stable or prerelease:
-                    return stable, prerelease, f"github:{source['repo']}"
+                    return stable, prerelease, f"github:{source['repo']}", errors
                 # Fallback to tags
                 stable, prerelease = fetch_github_tags(source["repo"])
                 if stable or prerelease:
-                    return stable, prerelease, f"github-tags:{source['repo']}"
+                    return stable, prerelease, f"github-tags:{source['repo']}", errors
 
             elif src_type == "github-tags":
                 stable, prerelease = fetch_github_tags(source["repo"])
                 if stable or prerelease:
-                    return stable, prerelease, f"github-tags:{source['repo']}"
+                    return stable, prerelease, f"github-tags:{source['repo']}", errors
 
             elif src_type == "nuget":
                 stable, prerelease = fetch_nuget_versions(source["package_id"])
                 if stable or prerelease:
-                    return stable, prerelease, f"nuget:{source['package_id']}"
+                    return stable, prerelease, f"nuget:{source['package_id']}", errors
 
             elif src_type == "scraping-json":
                 result = fetch_scraping_json(source)
                 if result:
-                    return result, None, f"scraping-json:{source.get('url', '')}"
+                    return result, None, f"scraping-json:{source.get('url', '')}", errors
 
             elif src_type == "scraping-html":
                 result = fetch_scraping_html(source)
                 if result:
-                    return result, None, f"scraping-html:{source.get('url', '')}"
+                    return result, None, f"scraping-html:{source.get('url', '')}", errors
 
             elif src_type == "scraping":
                 result = fetch_scraping_html(source)
                 if result:
-                    return result, None, f"scraping:{source.get('url', '')}"
+                    return result, None, f"scraping:{source.get('url', '')}", errors
 
         except Exception as e:
             print(f"    [!] {src_type} failed: {e}", file=sys.stderr)
+            errors.append(f"{src_type}: {e}")
             continue
 
-    return None, None, None
+    return None, None, None, errors
+
+
+def report_failure(entry_id, messages):
+    """Print a failure, as a GitHub Actions annotation when running in CI."""
+    detail = "; ".join(messages) if messages else "no source returned a version"
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        print(f"::warning title=Fetch failed: {entry_id}::{detail}")
+    return f"{entry_id}: {detail}"
 
 
 def main():
@@ -332,6 +336,7 @@ def main():
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     updated = 0
     skipped = 0
+    attempted = 0
     errors = []
 
     for entry in tracker["entries"]:
@@ -342,10 +347,11 @@ def main():
                 print(f"  [{entry['id']}] (manual) ... skipped")
             continue
 
+        attempted += 1
         source_desc = " / ".join(s.get("type") for s in sources)
         print(f"  [{entry['id']}] ({source_desc}) ... ", end="", flush=True)
 
-        stable, prerelease, active = fetch_entry(entry)
+        stable, prerelease, active, source_errors = fetch_entry(entry)
 
         if stable or prerelease:
             entry["versions"]["stable"] = stable
@@ -358,19 +364,24 @@ def main():
             p_ver = prerelease["version"] if prerelease else "-"
             print(f"stable={s_ver}  pre={p_ver}  via={active}")
         else:
-            entry["last_checked"] = today
-            skipped += 1
-            print("no versions found (skipped)")
+            # Keep the previous versions and last_checked: nothing was verified.
+            print("FAILED")
+            errors.append(report_failure(entry["id"], source_errors))
 
     tracker["_meta"]["last_updated"] = today
 
     with open(tracker_path, "w", encoding="utf-8") as f:
         json.dump(tracker, f, indent=2, ensure_ascii=False)
 
-    print(f"\nDone: {updated} updated, {skipped} skipped/unchanged, {len(errors)} errors.")
-    if errors:
-        for err in errors:
-            print(f"  ERROR: {err}")
+    print(f"\nDone: {updated} updated, {skipped} skipped, {len(errors)} failed.")
+    for err in errors:
+        print(f"  ERROR: {err}", file=sys.stderr)
+
+    # Partial failures still exit 0 so CI commits the entries that did update.
+    # Exit 1 only when every automatic entry failed: that is an outage (rate
+    # limit, network, token), and there is nothing worth committing.
+    if attempted and len(errors) == attempted:
+        print("Every automatic entry failed.", file=sys.stderr)
         return 1
     return 0
 
