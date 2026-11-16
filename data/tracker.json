@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "Graphics DLL version tracker (upscaling, frame gen, low latency, ray tracing, physics, debug)",
-    "last_updated": "2026-11-10",
+    "last_updated": "2026-11-16",
     "schema_version": "2.0"
   },
   "entries": [
@@ -43,7 +43,7 @@
         }
       },
       "active_source": "github:microsoft/DirectX-Headers",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "D3D12Core.dll": {
           "version": "1.620.2.0",
@@ -98,7 +98,7 @@
         }
       },
       "active_source": "nuget:Microsoft.Direct3D.DirectStorage",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "dstorage.dll": {
           "version": "1.3.2506.2501",
@@ -153,7 +153,7 @@
         }
       },
       "active_source": "github:microsoft/DirectXShaderCompiler",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "dxcompiler.dll": {
           "version": "1.9.2609.5",
@@ -190,7 +190,7 @@
         "prerelease": null
       },
       "active_source": "nuget:directxtk_desktop_win10",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "pix",
@@ -228,7 +228,7 @@
         "prerelease": null
       },
       "active_source": "nuget:WinPixEventRuntime",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "WinPixEventRuntime.dll": {
           "version": "1.0.2403.8001",
@@ -268,7 +268,7 @@
         "prerelease": null
       },
       "active_source": "github:GPUOpen-LibrariesAndSDKs/AGS_SDK",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "amd_ags_x64.dll": {
           "version": "6.3.1.0",
@@ -305,7 +305,7 @@
         "prerelease": null
       },
       "active_source": "github:GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "fidelityfx-sdk",
@@ -344,7 +344,7 @@
         "prerelease": null
       },
       "active_source": "github:GPUOpen-LibrariesAndSDKs/FidelityFX-SDK",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "amd_fidelityfx_denoiser_dx12.dll": {
           "version": "1.2.1.4555",
@@ -420,7 +420,7 @@
         "prerelease": null
       },
       "active_source": "github:GPUOpen-LibrariesAndSDKs/AntiLag2-SDK",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "streamline",
@@ -463,7 +463,7 @@
         "prerelease": null
       },
       "active_source": "github:NVIDIA-RTX/Streamline",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "sl.common.dll": {
           "version": "2.14.16.0",
@@ -574,7 +574,7 @@
         "prerelease": null
       },
       "active_source": "github:NVIDIA/DLSS",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "nvngx_dlss.dll": {
           "version": "310.9.16.0",
@@ -635,7 +635,7 @@
         "prerelease": null
       },
       "active_source": "github:NVIDIA-RTX/Streamline",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "sl.pcl.dll": {
           "version": "2.14.16.0",
@@ -675,7 +675,7 @@
         "prerelease": null
       },
       "active_source": "github-commits:NVIDIA/nvapi",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "nis",
@@ -698,7 +698,7 @@
         "prerelease": null
       },
       "active_source": "github:NVIDIAGameWorks/NVIDIAImageScaling",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "rtxgi",
@@ -715,13 +715,13 @@
       ],
       "versions": {
         "stable": {
-          "version": "2.8.0",
-          "date": "2026-10-13"
+          "version": "2.9.0",
+          "date": "2026-11-12"
         },
         "prerelease": null
       },
       "active_source": "github:NVIDIA-RTX/RTXGI",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "rtxdi",
@@ -738,13 +738,13 @@
       ],
       "versions": {
         "stable": {
-          "version": "3.1.0",
-          "date": "2026-09-03"
+          "version": "3.2.0",
+          "date": "2026-11-10"
         },
         "prerelease": null
       },
       "active_source": "github:NVIDIA-RTX/RTXDI",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "physx",
@@ -768,13 +768,13 @@
       ],
       "versions": {
         "stable": {
-          "version": "110.3-omni-and-physx-5.9.1",
-          "date": "2026-10-27"
+          "version": "ovphysx-0.8.0",
+          "date": "2026-11-13"
         },
         "prerelease": null
       },
       "active_source": "github:NVIDIA-Omniverse/PhysX",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "xess",
@@ -810,7 +810,7 @@
         "prerelease": null
       },
       "active_source": "github:intel/xess",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "libxell.dll": {
           "version": "1.3.2.10",
@@ -863,7 +863,7 @@
         "prerelease": null
       },
       "active_source": "scraping-json:https://vulkan.lunarg.com/sdk/latest.json",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "swiftshader",
@@ -879,14 +879,14 @@
       ],
       "versions": {
         "stable": {
-          "version": "cddb5c9",
-          "date": "2026-10-14",
+          "version": "708e9e7",
+          "date": "2026-11-10",
           "rolling": true
         },
         "prerelease": null
       },
       "active_source": "github-commits:google/swiftshader",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "openal-soft",
@@ -919,7 +919,7 @@
         "prerelease": null
       },
       "active_source": "github:kcat/openal-soft",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "soft_oal.dll": {
           "version": "1.25.1.0",
@@ -976,7 +976,7 @@
         "prerelease": null
       },
       "active_source": "github:ValveSoftware/steam-audio",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "phonon.dll": {
           "version": "4.8.1.0",
@@ -1021,7 +1021,7 @@
         "prerelease": null
       },
       "active_source": "nuget:Microsoft.XAudio2.Redist",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "xaudio2_9redist.dll": {
           "version": "1.0.2504.10003",
@@ -1052,7 +1052,7 @@
         "prerelease": null
       },
       "active_source": "github:mackron/miniaudio",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "soloud",
@@ -1075,7 +1075,7 @@
         "prerelease": null
       },
       "active_source": "github:jarikomppa/soloud",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "nrd",
@@ -1100,7 +1100,7 @@
         "prerelease": null
       },
       "active_source": "github:NVIDIA-RTX/NRD",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "nri",
@@ -1118,13 +1118,13 @@
       ],
       "versions": {
         "stable": {
-          "version": "191",
-          "date": "2026-10-30"
+          "version": "192",
+          "date": "2026-11-12"
         },
         "prerelease": null
       },
       "active_source": "github:NVIDIA-RTX/NRi",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "nvrhi",
@@ -1147,7 +1147,7 @@
         "prerelease": null
       },
       "active_source": "github-commits:NVIDIA-RTX/NVRHI",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "vulkan-memory-allocator",
@@ -1170,7 +1170,7 @@
         "prerelease": null
       },
       "active_source": "github:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "bullet-physics",
@@ -1193,7 +1193,7 @@
         "prerelease": null
       },
       "active_source": "github:bulletphysics/bullet3",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "openxr",
@@ -1225,7 +1225,7 @@
         "prerelease": null
       },
       "active_source": "github:KhronosGroup/OpenXR-SDK",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "openxr_loader.dll": {
           "version": "1.1.65.0",
@@ -1265,7 +1265,7 @@
         "prerelease": null
       },
       "active_source": "github:baldurk/renderdoc",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "renderdoc.dll": {
           "version": "1.47.0.0",
@@ -1304,12 +1304,12 @@
       "versions": {
         "stable": {
           "version": "14.44.35211.0",
-          "date": "2026-10-07"
+          "date": "2026-11-07"
         },
         "prerelease": null
       },
       "active_source": "pe-version:https://aka.ms/vs/17/release/vc_redist.x64.exe",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "fmod",
@@ -1396,7 +1396,7 @@
         "prerelease": null
       },
       "active_source": "github:NVIDIAGameWorks/PhysX",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "PhysXDevice64.dll": {
           "version": "18.12.7.1",
@@ -1441,7 +1441,7 @@
         "prerelease": null
       },
       "active_source": "nuget:Microsoft.AI.DirectML",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "DirectML.dll": {
           "version": "1.15.4.0",
@@ -1483,7 +1483,7 @@
         }
       },
       "active_source": "nuget:Microsoft.Direct3D.WARP",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "d3d10warp.dll": {
           "version": "1.0.22.0",
@@ -1523,7 +1523,7 @@
         "prerelease": null
       },
       "active_source": "nuget:Microsoft.GameInput",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "GameInputRedist.dll": {
           "version": "4.0.306.0",
@@ -1559,7 +1559,7 @@
         "prerelease": null
       },
       "active_source": "github:doitsujin/dxvk",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "vkd3d-proton",
@@ -1584,7 +1584,7 @@
         "prerelease": null
       },
       "active_source": "github:HansKristian-Work/vkd3d-proton",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "openvr",
@@ -1608,7 +1608,7 @@
         "prerelease": null
       },
       "active_source": "github:ValveSoftware/openvr",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     },
     {
       "id": "sdl3",
@@ -1640,7 +1640,7 @@
         "prerelease": null
       },
       "active_source": "github:libsdl-org/SDL",
-      "last_checked": "2026-11-10",
+      "last_checked": "2026-11-16",
       "dll_versions": {
         "SDL3.dll": {
           "version": "3.4.20.0",
@@ -1674,7 +1674,7 @@
         "prerelease": null
       },
       "active_source": "github:optiscaler/OptiScaler",
-      "last_checked": "2026-11-10"
+      "last_checked": "2026-11-16"
     }
   ]
 }
